@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundedJobs AI - Discover Newly Funded Companies Hiring Now</title>
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <!-- Main Outer Wrapper -->
+    <div id="app-container">
+        <!-- Auth Layout Section -->
+        <main id="auth-screen">
+            <!-- Left Side: Hero and widgets -->
+            <div class="auth-hero-pane">
+                <div class="brand-logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C12 2 16 6 16 11C16 14.5 13 16 12 16C11 16 8 14.5 8 11C8 6 12 2 12 2Z" fill="url(#logo-grad)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M12 16V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M7 12C5 12.5 2 16.5 2 16.5L7 15V12Z" fill="currentColor"/>
+                        <path d="M17 12C19 12.5 22 16.5 22 16.5L17 15V12Z" fill="currentColor"/>
+                        <defs>
+                            <linearGradient id="logo-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#3b82f6" />
+                                <stop offset="1" stop-color="#8b5cf6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>FundedJobs AI</span>
+                </div>
+
+                <div class="auth-hero-content">
+                    <h1>Discover Newly Funded Companies Hiring Now</h1>
+                    <p class="subheadline">Get personalized funding alerts from startups that recently raised capital. Be the first to know about the world's fastest-growing teams.</p>
+                    
+                    <!-- Recent Funding rounds component -->
+                    <div class="funding-rounds-widget">
+                        <h3>RECENT FUNDING ROUNDS</h3>
+                        <div class="funding-chips-container">
+                            <div class="funding-chip">
+                                <span class="dot green-dot"></span>
+                                <span class="company">Vertex AI</span>
+                                <span class="divider">•</span>
+                                <span class="details">$45M Series B</span>
+                            </div>
+                            <div class="funding-chip">
+                                <span class="dot blue-dot"></span>
+                                <span class="company">Nebula Corp</span>
+                                <span class="divider">•</span>
+                                <span class="details">$12M Seed</span>
+                            </div>
+                            <div class="funding-chip">
+                                <span class="dot purple-dot"></span>
+                                <span class="company">Flux Labs</span>
+                                <span class="divider">•</span>
+                                <span class="details">$120M Series C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-hero-footer">
+                    <span>TRUSTED BY 50,000+ JOB SEEKERS</span>
+                </div>
+            </div>
+
+            <!-- Right Side: Interactive Forms Card -->
+            <div class="auth-form-pane">
+                <div class="auth-card">
+                    <!-- Card Top Header & Pill Selector -->
+                    <div class="auth-card-top">
+                        <div class="header-texts">
+                            <h2 id="auth-title">Welcome Back</h2>
+                        </div>
+                        <div class="auth-toggle-pill" role="tablist">
+                            <button id="toggle-login" class="toggle-btn active" role="tab" aria-selected="true">Login</button>
+                            <button id="toggle-signup" class="toggle-btn" role="tab" aria-selected="false">Sign Up</button>
+                        </div>
+                    </div>
+
+
+
+                    <!-- LOGIN FORM -->
+                    <form id="login-form" class="auth-form" novalidate>
+                        <div class="input-group">
+                            <label for="login-email">Email Address</label>
+                            <input type="email" id="login-email" placeholder="name@company.com" required autocomplete="username">
+                        </div>
+
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label for="login-password">Password</label>
+                                <a href="#" class="forgot-password-link" id="forgot-password">Forgot Password?</a>
+                            </div>
+                            <div class="password-wrapper">
+                                <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                                <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon eye-show">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon eye-hide" style="display: none;">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                        <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                        <line x1="2" y1="2" x2="22" y2="22" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn primary-btn">
+                            <span>Sign In</span>
+                        </button>
+                        
+                        <button type="button" id="btn-guest-mode" class="guest-btn">
+                            <span>Continue as Guest</span>
+                        </button>
+                    </form>
+
+                    <!-- SIGN UP FORM (initially hidden) -->
+                    <form id="signup-form" class="auth-form" novalidate style="display: none;">
+                        <div class="input-group">
+                            <label for="signup-email">Email Address</label>
+                            <input type="email" id="signup-email" placeholder="name@company.com" required autocomplete="username">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="signup-password">Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="signup-password" placeholder="••••••••" required autocomplete="new-password">
+                                <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon eye-show">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon eye-hide" style="display: none;">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                        <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                        <line x1="2" y1="2" x2="22" y2="22" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="signup-confirm-password">Confirm Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="signup-confirm-password" placeholder="••••••••" required autocomplete="new-password">
+                                <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon eye-show">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon eye-hide" style="display: none;">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                        <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                        <line x1="2" y1="2" x2="22" y2="22" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn primary-btn">
+                            <span>Create Account</span>
+                        </button>
+                    </form>
+
+                    <!-- Card Footnote -->
+                    <p class="footnote">We only use your email to send relevant job opportunities. No spam, ever.</p>
+                </div>
+
+                <!-- Footer links bottom right -->
+                <div class="auth-right-footer">
+                    <a href="#">Privacy Policy</a>
+                    <span class="dot-sep">•</span>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </main>
+
+        <!-- ==================== ONBOARDING FLOW ==================== -->
+        <!-- Sticky Progress Tracker -->
+        <div id="onboarding-progress-wrapper" style="display: none;">
+            <div class="progress-info-row">
+                <span class="progress-label">PROGRESS</span>
+                <span id="progress-percent">25%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="progress-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Onboarding Screen wrapper -->
+        <section id="onboarding-screen" style="display: none;">
+            <!-- Onboarding Card Form -->
+            <main class="onboarding-card-container">
+                <div class="onboarding-card">
+                    <!-- Onboarding Card Top Header -->
+                    <div class="onboarding-header">
+                        <button type="button" class="nav-icon-btn" id="onboard-header-back" aria-label="Go back">
+                            <svg class="back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                        </button>
+                        <span id="onboarding-step-text">Step 1 of 4</span>
+                        <button type="button" class="nav-icon-btn" id="onboard-header-close" aria-label="Close onboarding">
+                            <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- STEP 1: TELL US ABOUT YOURSELF -->
+                    <div class="onboarding-step-pane" data-step="1">
+                        <h2>Tell us about yourself</h2>
+                        <p class="step-subtitle">Help us personalize startup recommendations based on your unique career path.</p>
+                        
+                        <div class="form-inputs-stack">
+                            <div class="input-group">
+                                <label for="onboard-first-name">FIRST NAME</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="onboard-first-name" placeholder="Enter your first name" required>
+                                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="onboard-title">CURRENT JOB TITLE</label>
+                                <div class="select-wrapper">
+                                    <select id="onboard-title">
+                                        <option value="" disabled selected>Select your current job title</option>
+                                        <option value="Product Manager">Product Manager</option>
+                                        <option value="Associate Product Manager">Associate Product Manager</option>
+                                        <option value="Product Analyst">Product Analyst</option>
+                                        <option value="Business Analyst">Business Analyst</option>
+                                        <option value="Software Engineer">Software Engineer</option>
+                                        <option value="Data Analyst">Data Analyst</option>
+                                        <option value="Data Scientist">Data Scientist</option>
+                                        <option value="UI/UX Designer">UI/UX Designer</option>
+                                        <option value="Marketing Manager">Marketing Manager</option>
+                                        <option value="Sales Manager">Sales Manager</option>
+                                        <option value="Founder">Founder</option>
+                                        <option value="Student">Student</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- OTHER TITLE FIELD (Hidden by default) -->
+                            <div class="input-group" id="onboard-title-other-group" style="display: none;">
+                                <label for="onboard-title-other">Enter your current job title</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="onboard-title-other" placeholder="Type your job title">
+                                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="onboard-exp">YEARS OF EXPERIENCE</label>
+                                <div class="select-wrapper">
+                                    <select id="onboard-exp">
+                                        <option value="" disabled selected>Select experience range</option>
+                                        <option value="0-1">0–1 Years</option>
+                                        <option value="1-3">1–3 Years</option>
+                                        <option value="3-5">3–5 Years</option>
+                                        <option value="5-10">5–10 Years</option>
+                                        <option value="10+">10+ Years</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: WHICH ROLES INTEREST YOU? -->
+                    <div class="onboarding-step-pane" data-step="2" style="display: none;">
+                        <h2>Which roles interest you?</h2>
+                        <p class="step-subtitle">Select up to 3 roles to personalize your feed.</p>
+                        
+                        <div class="roles-chips-container" id="roles-chips-wrapper">
+                            <button type="button" class="chip-btn" data-value="Product Manager">Product Manager</button>
+                            <button type="button" class="chip-btn" data-value="Associate Product Manager">Associate Product Manager</button>
+                            <button type="button" class="chip-btn" data-value="Senior Product Manager">Senior Product Manager</button>
+                            <button type="button" class="chip-btn" data-value="Product Analyst">Product Analyst</button>
+                            <button type="button" class="chip-btn" data-value="Business Analyst">Business Analyst</button>
+                            <button type="button" class="chip-btn" data-value="AI Builder">AI Builder</button>
+                            <button type="button" class="chip-btn" data-value="AI Product Manager">AI Product Manager</button>
+                            <button type="button" class="chip-btn" data-value="Program Manager">Program Manager</button>
+                            <button type="button" class="chip-btn" data-value="Project Manager">Project Manager</button>
+                            <button type="button" class="chip-btn" data-value="Software Engineer">Software Engineer</button>
+                            <button type="button" class="chip-btn" data-value="Data Analyst">Data Analyst</button>
+                            <button type="button" class="chip-btn" data-value="Data Scientist">Data Scientist</button>
+                            <button type="button" class="chip-btn" data-value="UI/UX Designer">UI/UX Designer</button>
+                            <button type="button" class="chip-btn" data-value="Growth Manager">Growth Manager</button>
+                            <button type="button" class="chip-btn" data-value="Marketing Manager">Marketing Manager</button>
+                            <button type="button" class="chip-btn" data-value="Operations Manager">Operations Manager</button>
+                            <button type="button" class="chip-btn" data-value="Founder">Founder</button>
+                            <button type="button" class="chip-btn" data-value="Student">Student</button>
+                            <button type="button" class="chip-btn" data-value="Other">Other</button>
+                        </div>
+
+                        <!-- OTHER ROLE FIELD (Hidden by default) -->
+                        <div class="input-group" id="onboard-role-other-group" style="display: none; margin-top: 1.25rem;">
+                            <label for="onboard-role-other">Enter preferred role</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="onboard-role-other" placeholder="Type your preferred role">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: WHERE WOULD YOU LIKE TO WORK? -->
+                    <div class="onboarding-step-pane" data-step="3" style="display: none;">
+                        <h2>Where would you like to work?</h2>
+                        <p class="step-subtitle">Select your preferred locations. You can pick multiple options.</p>
+                        
+                        <div class="locations-grid-container" id="locations-grid-wrapper">
+                            <div class="location-option-card" data-value="Remote">
+                                <div class="loc-header">
+                                    <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                    </svg>
+                                    <span>Remote</span>
+                                </div>
+                            </div>
+
+                            <div class="location-option-card" data-value="Bengaluru">
+                                <div class="loc-header">
+                                    <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                                        <path d="M7 22V14h10v8"></path>
+                                        <path d="M9 10h6"></path>
+                                        <path d="M9 6h6"></path>
+                                    </svg>
+                                    <span>Bengaluru</span>
+                                </div>
+                            </div>
+
+                            <div class="location-option-card" data-value="Mumbai">
+                                <div class="loc-header">
+                                    <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                                        <path d="M7 22V14h10v8"></path>
+                                        <path d="M9 10h6"></path>
+                                        <path d="M9 6h6"></path>
+                                    </svg>
+                                    <span>Mumbai</span>
+                                </div>
+                            </div>
+
+                            <div class="location-option-card" data-value="Delhi NCR">
+                                <div class="loc-header">
+                                    <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2L2 22h20L12 2Z"></path>
+                                        <circle cx="12" cy="13" r="3"></circle>
+                                    </svg>
+                                    <span>Delhi NCR</span>
+                                </div>
+                            </div>
+
+                            <div class="location-option-card" data-value="Hyderabad">
+                                <div class="loc-header">
+                                    <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                                        <path d="M7 22V14h10v8"></path>
+                                        <path d="M9 10h6"></path>
+                                        <path d="M9 6h6"></path>
+                                    </svg>
+                                    <span>Hyderabad</span>
+                                </div>
+                            </div>
+
+                            <div class="location-option-card" data-value="Pune">
+                                <div class="loc-header">
+                                    <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                                        <path d="M7 22V14h10v8"></path>
+                                        <path d="M9 10h6"></path>
+                                        <path d="M9 6h6"></path>
+                                    </svg>
+                                    <span>Pune</span>
+                                </div>
+                            </div>
+
+                            <div class="location-option-card more-loc-card" id="btn-more-locations">
+                                <div class="loc-header">
+                                    <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    <span>More Locations</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MORE LOCATIONS DROPDOWN (Hidden by default) -->
+                        <div id="more-locations-dropdown-container" class="more-locations-dropdown" style="display: none;">
+                            <div class="search-box-wrapper">
+                                <input type="text" id="onboard-loc-search" placeholder="Search cities..." autocomplete="off">
+                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </div>
+                            
+                            <div class="cities-list" id="cities-checklist-wrapper">
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Chennai">
+                                    <span>Chennai</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Kolkata">
+                                    <span>Kolkata</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Ahmedabad">
+                                    <span>Ahmedabad</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Jaipur">
+                                    <span>Jaipur</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Kochi">
+                                    <span>Kochi</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Noida">
+                                    <span>Noida</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Gurugram">
+                                    <span>Gurugram</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Indore">
+                                    <span>Indore</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Lucknow">
+                                    <span>Lucknow</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Chandigarh">
+                                    <span>Chandigarh</span>
+                                </label>
+                                <label class="city-option">
+                                    <input type="checkbox" data-city="Other">
+                                    <span>Other</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- OTHER LOCATION FIELD (Hidden by default) -->
+                        <div class="input-group" id="onboard-loc-other-group" style="display: none; margin-top: 1rem;">
+                            <label for="onboard-loc-other">Enter preferred location</label>
+                            <div class="input-with-icon add-action-input">
+                                <input type="text" id="onboard-loc-other" placeholder="Type city, state, or country">
+                                <button type="button" id="btn-add-other-loc" class="input-action-btn">Add</button>
+                            </div>
+                        </div>
+
+                        <!-- SELECTED LOCATIONS CHIPS CONTAINER -->
+                        <div id="selected-locations-chips" class="selected-locations-chips" style="margin-top: 1rem;"></div>
+                    </div>
+
+                    <!-- STEP 4: FINAL PREFERENCES -->
+                    <div class="onboarding-step-pane" data-step="4" style="display: none;">
+                        <h2>Final Preferences</h2>
+                        <p class="step-subtitle">Fine-tune your recommendations to match your career goals.</p>
+                        
+                        <div class="preferences-section">
+                            <span class="section-title">PREFERRED STARTUP STAGE</span>
+                            
+                            <div class="stages-grid-container" id="stages-grid-wrapper">
+                                <div class="stage-option-card" data-value="Seed">
+                                    <h4>Seed</h4>
+                                    <p>Early growth</p>
+                                </div>
+                                <div class="stage-option-card" data-value="Series A">
+                                    <h4>Series A</h4>
+                                    <p>Scaling product</p>
+                                </div>
+                                <div class="stage-option-card" data-value="Series B">
+                                    <h4>Series B</h4>
+                                    <p>Market expansion</p>
+                                </div>
+                                <div class="stage-option-card" data-value="Series C+">
+                                    <h4>Series C+</h4>
+                                    <p>Late stage</p>
+                                </div>
+                                <div class="stage-option-card" data-value="Any">
+                                    <h4>Any</h4>
+                                    <p>Open to all</p>
+                                </div>
+                            </div>
+
+                            <div class="email-alerts-card">
+                                <div class="email-alerts-text">
+                                    <h4>Email Alerts</h4>
+                                    <p>Get notified of new opportunities instantly.</p>
+                                </div>
+                                <label class="switch-toggle">
+                                    <input type="checkbox" id="onboard-email-alerts" checked>
+                                    <span class="slider-round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Nav Row -->
+                    <div class="onboarding-actions-row">
+                        <button type="button" class="back-link-btn" id="btn-onboard-back">
+                            <span>&lt; Back</span>
+                        </button>
+                        <button type="button" class="submit-btn primary-btn onboard-next-btn" id="btn-onboard-next">
+                            <span>NEXT &gt;</span>
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- Temporary Success Screen -->
+        <section id="success-screen" style="display: none;">
+            <div class="success-card">
+                <div class="success-icon-badge">
+                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h2>Profile Setup Complete</h2>
+                <p>Your preferences have been saved successfully.</p>
+                <button type="button" class="submit-btn primary-btn" id="btn-success-continue">
+                    <span>Continue</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== DASHBOARD SCREEN ==================== -->
+        <section id="dashboard-screen" style="display: none;">
+            <!-- Left Sidebar Navigation -->
+            <aside class="sidebar">
+                <div class="sidebar-brand-area">
+                    <div class="brand-logo">
+                        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C12 2 16 6 16 11C16 14.5 13 16 12 16C11 16 8 14.5 8 11C8 6 12 2 12 2Z" fill="url(#logo-grad-dash)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M12 16V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M7 12C5 12.5 2 16.5 2 16.5L7 15V12Z" fill="currentColor"/>
+                            <path d="M17 12C19 12.5 22 16.5 22 16.5L17 15V12Z" fill="currentColor"/>
+                            <defs>
+                                <linearGradient id="logo-grad-dash" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#3b82f6" />
+                                    <stop offset="1" stop-color="#8b5cf6" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span>FundedJobs AI</span>
+                    </div>
+                    <span class="sidebar-subtitle">Funded Startup Jobs</span>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" data-pane="pane-dashboard">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="9"></rect>
+                            <rect x="14" y="3" width="7" height="5"></rect>
+                            <rect x="14" y="12" width="7" height="9"></rect>
+                            <rect x="3" y="16" width="7" height="5"></rect>
+                        </svg>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-pane="pane-preferences">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        <span>Preferences</span>
+                    </button>
+                    <button class="nav-item" data-pane="pane-profile">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>Profile</span>
+                    </button>
+                </nav>
+
+                <!-- Sidebar User Widget -->
+                <div class="sidebar-user-widget">
+                    <div class="user-avatar-circle">--</div>
+                    <div class="user-info">
+                        <span class="user-name" id="dash-user-name">Loading...</span>
+                        <span class="user-role" id="dash-user-title">Loading...</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Top Header Bar -->
+                <header class="main-header">
+                    <div class="search-bar-container">
+                        <svg class="header-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" placeholder="Search startups, roles, or funding rounds...">
+                    </div>
+                    
+                    <div class="header-actions">
+                        <button type="button" class="header-action-btn" aria-label="Notifications">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <span class="notification-badge-dot"></span>
+                        </button>
+                        <button type="button" class="header-action-btn" aria-label="Help">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </button>
+                        <button type="button" id="header-btn-logout" class="header-action-btn" aria-label="Sign Out" title="Sign Out">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- PANE 1: DASHBOARD -->
+                <div id="pane-dashboard" class="content-pane active">
+                    <!-- Welcome Header -->
+                    <div class="welcome-section">
+                        <h1 id="welcome-greeting">Welcome Back</h1>
+                        <p class="welcome-subtitle">Discover recently funded startups hiring for your preferred roles.</p>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                         <div class="stats-card">
+                             <div class="stats-card-header">
+                                 <span class="stats-label">NEW STARTUP MATCHES</span>
+                                 <svg class="stats-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                     <path d="M4.5 16.5c-1.5 1.26-2.5 3-2.5 5h20c0-2-1-3.74-2.5-5"></path>
+                                     <path d="M12 2C7.03 2 3 6.03 3 11c0 2.5 1.25 4.5 3 6v4h12v-4c1.75-1.5 3-3.5 3-6 0-4.97-4.03-9-9-9z"></path>
+                                 </svg>
+                             </div>
+                             <div class="stats-value" id="stats-startup-matches">0</div>
+                             <span class="stats-subtext" id="stats-startup-matches-subtext">No startup matches found yet.</span>
+                         </div>
+ 
+                         <div class="stats-card">
+                             <div class="stats-card-header">
+                                 <span class="stats-label">OPEN ROLES AVAILABLE</span>
+                                 <svg class="stats-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                 </svg>
+                             </div>
+                             <div class="stats-value" id="stats-open-roles">0</div>
+                             <span class="stats-subtext" id="stats-open-roles-subtext">No matching opportunities found yet.</span>
+                         </div>
+ 
+                         <div class="stats-card">
+                             <div class="stats-card-header">
+                                 <span class="stats-label">RECENT EMAIL ALERTS</span>
+                                 <svg class="stats-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                     <polyline points="22,6 12,13 2,6"></polyline>
+                                 </svg>
+                             </div>
+                             <div class="stats-value" id="stats-email-alerts-count">0</div>
+                             <span class="stats-subtext" id="stats-email-alerts-subtext">No alerts sent yet.</span>
+                         </div>
+                     </div>
+
+                    <!-- Startup List Section -->
+                    <div class="section-container">
+                        <div class="section-header-row">
+                            <h2>Recently Funded Startups Matching You</h2>
+                        </div>
+
+                        <div class="startup-cards-grid">
+                            <div class="dashboard-empty-state" id="startups-empty-state">
+                                <div class="empty-state-icon">
+                                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                    </svg>
+                                </div>
+                                <h3>No matching funded startups found yet.</h3>
+                                <p>We are continuously scanning for newly funded companies matching your preferences.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Alerts Section -->
+                    <div class="section-container">
+                        <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">Recent Email Alerts</h2>
+                            <button type="button" id="btn-send-test-email" class="view-roles-btn" style="padding: 6px 12px; font-size: 0.8rem; height: auto; margin-top: 0; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #3b82f6;">Send Test Email</button>
+                        </div>
+                        <div class="email-alerts-list">
+                            <div class="dashboard-empty-state compact" id="alerts-empty-state">
+                                <div class="empty-state-icon">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                </div>
+                                <h3>No email alerts have been sent yet.</h3>
+                                <p>When matching startups are found, your alerts will appear here.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Debug / Admin Status Panel -->
+                    <div class="section-container" id="debug-status-panel" style="margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px;">
+                        <h3 style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 15px;">MVP Testing Status Panel</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px;">
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 4px; font-weight: 600;">RSS LAST RUN TIME</div>
+                                <div id="debug-rss-last-run" style="font-size: 0.85rem; font-weight: 600; color: #fff;">Never</div>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 4px; font-weight: 600;">STARTUPS IMPORTED</div>
+                                <div id="debug-startups-count" style="font-size: 1.1rem; font-weight: 600; color: #3b82f6;">0</div>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 4px; font-weight: 600;">JOBS IMPORTED</div>
+                                <div id="debug-jobs-count" style="font-size: 1.1rem; font-weight: 600; color: #10b981;">0</div>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 4px; font-weight: 600;">USERS MATCHED</div>
+                                <div id="debug-users-matched" style="font-size: 1.1rem; font-weight: 600; color: #8b5cf6;">0</div>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 4px; font-weight: 600;">EMAILS SENT</div>
+                                <div id="debug-emails-sent" style="font-size: 1.1rem; font-weight: 600; color: #f59e0b;">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Matching Engine Live Debug Mode -->
+                    <div class="section-container" id="matching-debug-section" style="margin-top: 30px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #10b981; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                            Matching Engine Live Debug Mode
+                        </h3>
+                        
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <div style="font-size: 0.8rem; font-weight: 600; color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">USER PREFERENCES LOADED</div>
+                            <div style="font-size: 0.85rem; font-family: monospace; color: #fff; background: rgba(0, 0, 0, 0.3); padding: 8px; border-radius: 4px;">
+                                <strong>Preferred Roles:</strong> <span id="debug-pref-roles">None</span><br>
+                                <strong>Preferred Locations:</strong> <span id="debug-pref-locations">None</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <div style="font-size: 0.8rem; font-weight: 600; color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">MATCHING LOGS (EVALUATED STARTUPS & JOBS)</div>
+                            <div id="debug-matching-logs-container" style="max-height: 250px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: rgba(255, 255, 255, 0.8); background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 4px; display: flex; flex-direction: column; gap: 8px;">
+                                No logs processed yet.
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <div style="font-size: 0.8rem; font-weight: 600; color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">SUMMARY STATS</div>
+                            <div style="font-size: 0.85rem; font-family: monospace; color: #fff; background: rgba(0, 0, 0, 0.3); padding: 8px; border-radius: 4px;">
+                                <strong>Total Startups Imported:</strong> <span id="debug-sum-startups">0</span><br>
+                                <strong>Total Jobs Imported:</strong> <span id="debug-sum-jobs">0</span><br>
+                                <strong>Total Users Evaluated:</strong> <span id="debug-sum-users">0</span><br>
+                                <strong>Total Matches Created:</strong> <span id="debug-sum-matches">0</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 600; color: rgba(255, 255, 255, 0.6); margin-bottom: 5px;">EMAIL SERVICE DEBUGGING</div>
+                            <div id="debug-email-logs-container" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: #f59e0b; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 4px;">
+                                No email dispatches recorded.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANE 2: PREFERENCES -->
+                <div id="pane-preferences" class="content-pane">
+                    <div class="welcome-section">
+                        <h1>Edit Preferences</h1>
+                        <p class="welcome-subtitle">Modify your onboarding variables and job alert criteria below.</p>
+                    </div>
+
+                    <div class="settings-card">
+                        <form id="preferences-edit-form" class="auth-form">
+                            <div class="input-group">
+                                <label for="edit-first-name">First Name</label>
+                                <input type="text" id="edit-first-name" placeholder="Enter your first name" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="edit-job-title">Job Title</label>
+                                <input type="text" id="edit-job-title" placeholder="Type your job title" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="edit-experience">Experience Level</label>
+                                <div class="select-wrapper">
+                                    <select id="edit-experience">
+                                        <option value="0-1">0–1 Years</option>
+                                        <option value="1-3">1–3 Years</option>
+                                        <option value="3-5">3–5 Years</option>
+                                        <option value="5-10">5–10 Years</option>
+                                        <option value="10+">10+ Years</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="edit-roles">Preferred Roles (comma-separated)</label>
+                                <input type="text" id="edit-roles" placeholder="e.g. Product Manager, Associate Product Manager">
+                            </div>
+                            <div class="input-group">
+                                <label for="edit-locations">Preferred Locations (comma-separated)</label>
+                                <input type="text" id="edit-locations" placeholder="e.g. Remote, Bengaluru, Mumbai">
+                            </div>
+                            <button type="submit" class="submit-btn primary-btn" style="margin-top: 1rem;">
+                                <span>Save Changes</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANE 3: PROFILE -->
+                <div id="pane-profile" class="content-pane">
+                    <div class="welcome-section">
+                        <h1>User Profile</h1>
+                        <p class="welcome-subtitle">Manage your credentials and login status.</p>
+                    </div>
+
+                    <div class="settings-card profile-details-card">
+                        <div class="profile-info-row">
+                            <span class="info-label">First Name</span>
+                            <span class="info-value" id="profile-first-name">Loading...</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="info-label">Job Title</span>
+                            <span class="info-value" id="profile-job-title">Loading...</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="info-label">Experience Level</span>
+                            <span class="info-value" id="profile-experience-level">Loading...</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="info-label">Preferred Roles</span>
+                            <span class="info-value" id="profile-preferred-roles">Loading...</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="info-label">Preferred Locations</span>
+                            <span class="info-value" id="profile-preferred-locations">Loading...</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="info-label">Email</span>
+                            <span class="info-value" id="profile-user-email">Loading...</span>
+                        </div>
+                        
+                        <button type="button" id="btn-logout" class="guest-btn" style="margin-top: 2rem; border-color: rgba(239, 68, 68, 0.4); color: #ef4444;">
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- ==================== VIEW ROLES MODAL ==================== -->
+        <div id="view-roles-modal" class="modal-overlay" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <h2 id="modal-startup-name">Startup Name</h2>
+                    <button type="button" class="modal-close-btn" id="btn-close-modal" aria-label="Close modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-funding-row">
+                        <span id="modal-funding-stage" class="startup-stage-badge">Series A</span>
+                        <span id="modal-funding-amount" class="modal-funding-val">$12M</span>
+                        <span class="dot-divider">•</span>
+                        <span id="modal-startup-location" class="modal-meta-text">Palo Alto, CA</span>
+                    </div>
+
+                    <div class="modal-date-row" style="margin-top: 10px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.6);">
+                        <span>Funding Date: </span><span id="modal-funding-date" style="font-weight: 500; color: #fff;">2026-06-20</span>
+                    </div>
+                    
+                    <p id="modal-startup-desc" class="modal-desc-text" style="margin-top: 15px; line-height: 1.5; color: rgba(255, 255, 255, 0.8);">Company Description placeholder text.</p>
+
+                    <!-- Why This Matches You Section -->
+                    <div class="modal-matches-section" style="margin-top: 25px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15); padding: 15px; border-radius: 8px;">
+                        <h3 style="color: #3b82f6; font-size: 0.95rem; margin-top: 0; margin-bottom: 10px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.9;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 8 8 12 12 16"></polyline>
+                                <line x1="16" y1="12" x2="8" y2="12"></line>
+                            </svg>
+                            Why This Matches You
+                        </h3>
+                        <p style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px; margin-top: 0;">Matches your preferences because:</p>
+                        <ul id="modal-matching-reasons" style="margin: 0; padding-left: 20px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.9); line-height: 1.6;">
+                            <!-- Dynamically populated reason bullets -->
+                        </ul>
+                    </div>
+
+                    <!-- CTA Actions/Links -->
+                    <div class="modal-links-row" style="margin-top: 25px; display: flex; gap: 15px;">
+                        <a id="modal-link-website" href="#" target="_blank" class="submit-btn primary-btn" style="flex: 1; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: 42px; font-size: 0.9rem; margin-top: 0;">
+                            <span>Visit Startup Website</span>
+                        </a>
+                        <a id="modal-link-article" href="#" target="_blank" class="guest-btn" style="flex: 1; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: 42px; font-size: 0.9rem; border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; background: transparent;">
+                            <span>Read Source Article</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TOAST ALERT ==================== -->
+        <div id="app-toast" class="app-toast" style="display: none;">
+            <div class="toast-content">
+                <svg class="toast-check-icon" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span id="toast-message">Success!</span>
+            </div>
+        </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
