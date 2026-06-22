@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const welcomeSubtitle = document.querySelector('.welcome-section .welcome-subtitle');
         if (welcomeSubtitle) {
             if (matchedStartups.length > 0) {
-                welcomeSubtitle.innerText = `Discover recently funded startups hiring for your preferred roles. You have ${matchedStartups.length} new match${matchedStartups.length > 1 ? 'es' : ''} since yesterday.`;
+                welcomeSubtitle.innerText = `Discover recently funded startups hiring for your preferred roles. You have ${matchedStartups.length} matching startup${matchedStartups.length !== 1 ? 's' : ''}.`;
             } else {
                 welcomeSubtitle.innerText = 'Discover recently funded startups hiring for your preferred roles.';
             }
