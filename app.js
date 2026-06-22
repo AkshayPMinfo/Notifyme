@@ -966,15 +966,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data && data.user) {
                         console.log('[DEBUG] STEP 2: User ID returned:', data.user.id);
                     }
-                    // Call signOut immediately to ensure they are not logged in without verification
-                    try {
-                        await supabase.auth.signOut();
-                    } catch (signOutErr) {
-                        console.error('Error signing out unverified user:', signOutErr);
+                    
+                    if (data && data.session) {
+                        console.log('[DEBUG] STEP 2: Signup response: Auto-login successful (Confirm email is OFF)');
+                        localStorage.setItem('user_email', email);
+                        await handleAuthSuccess();
+                    } else {
+                        console.log('[DEBUG] STEP 2: Signup response: Verification email required (Confirm email is ON)');
+                        // Call signOut immediately to ensure they are not logged in without verification
+                        try {
+                            await supabase.auth.signOut();
+                        } catch (signOutErr) {
+                            console.error('Error signing out unverified user:', signOutErr);
+                        }
+                        alert('Please verify your email address before continuing.');
+                        showLogin();
+                        await updateActivePage('login');
                     }
-                    alert('Please verify your email address before continuing.');
-                    showLogin();
-                    await updateActivePage('login');
                 } else {
                     console.log('[DEBUG] STEP 2: Signup response: local success (Guest Mode)');
                     localStorage.setItem('user_email', email);
