@@ -1274,9 +1274,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Write to Supabase if logged in
         if (supabase) {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                console.log('[DEBUG] savePreferences: Attempting to fetch authenticated user from Supabase...');
+                const { data: { user }, error: userErr } = await supabase.auth.getUser();
+                if (userErr) {
+                    console.error('[DEBUG] savePreferences: getUser error:', userErr);
+                }
                 if (user) {
+                    console.log('[DEBUG] savePreferences: Authenticated user found:', user.email, 'ID:', user.id);
+                    
                     // Upsert to fj_profiles
+                    console.log('[DEBUG] savePreferences: Attempting to upsert profile to fj_profiles...');
                     const { error: profileErr } = await supabase
                         .from('fj_profiles')
                         .upsert({
@@ -1286,9 +1293,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             job_title: title,
                             experience: exp
                         });
-                    if (profileErr) console.error('Error saving profile to Supabase:', profileErr);
+                    if (profileErr) {
+                        console.error('[DEBUG] savePreferences: Profile save failure. Full error:', profileErr);
+                    } else {
+                        console.log('[DEBUG] savePreferences: Profile save success!');
+                    }
 
                     // Upsert to fj_preferences
+                    console.log('[DEBUG] savePreferences: Attempting to upsert preferences to fj_preferences...');
                     const { error: prefErr } = await supabase
                         .from('fj_preferences')
                         .upsert({
@@ -1298,10 +1310,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             startup_stages: stages.join(', '),
                             email_alerts: emailAlerts
                         }, { onConflict: 'user_id' });
-                    if (prefErr) console.error('Error saving preferences to Supabase:', prefErr);
+                    if (prefErr) {
+                        console.error('[DEBUG] savePreferences: Preferences save failure. Full error:', prefErr);
+                    } else {
+                        console.log('[DEBUG] savePreferences: Preferences save success!');
+                    }
+                } else {
+                    console.warn('[DEBUG] savePreferences: No authenticated user session found (Guest Mode). Supabase database writes skipped.');
                 }
             } catch (err) {
-                console.error('Supabase profiles save error:', err);
+                console.error('[DEBUG] savePreferences: Exception occurred during database save:', err);
             }
         }
 
@@ -1446,10 +1464,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Write to Supabase if logged in
             if (supabase) {
-                try {
-                    const { data: { user } } = await supabase.auth.getUser();
+                                  console.log('[DEBUG] Profile edit form: Fetching user...');
+                    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+                    if (userErr) console.error('[DEBUG] Profile edit form: getUser error:', userErr);
                     if (user) {
+                        console.log('[DEBUG] Profile edit form: Authenticated user found:', user.email);
+                        
                         // Upsert to fj_profiles
+                        console.log('[DEBUG] Profile edit form: Attempting profile update...');
                         const { error: profileErr } = await supabase
                             .from('fj_profiles')
                             .upsert({
@@ -1459,9 +1481,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 job_title: newTitle,
                                 experience: newExp
                             });
-                        if (profileErr) console.error('Error updating profile in Supabase:', profileErr);
+                        if (profileErr) {
+                            console.error('[DEBUG] Profile edit form: Profile update failure. Full error:', profileErr);
+                        } else {
+                            console.log('[DEBUG] Profile edit form: Profile update success!');
+                        }
 
                         // Upsert to fj_preferences
+                        console.log('[DEBUG] Profile edit form: Attempting preferences update...');
                         const { error: prefErr } = await supabase
                             .from('fj_preferences')
                             .upsert({
@@ -1471,7 +1498,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 startup_stages: localStorage.getItem('pref_startup_stage') || '',
                                 email_alerts: localStorage.getItem('pref_email_alerts') === 'true'
                             }, { onConflict: 'user_id' });
-                        if (prefErr) console.error('Error updating preferences in Supabase:', prefErr);
+                        if (prefErr) {
+                            console.error('[DEBUG] Profile edit form: Preferences update failure. Full error:', prefErr);
+                        } else {
+                            console.log('[DEBUG] Profile edit form: Preferences update success!');
+                        }
+                    } else {
+                        console.warn('[DEBUG] Profile edit form: No user found. Updates skipped.');
                     }
                 } catch (err) {
                     console.error('Supabase preferences update error:', err);
