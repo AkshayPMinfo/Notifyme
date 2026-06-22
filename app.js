@@ -635,7 +635,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            const { data: { session } } = await supabase.auth.getSession();
             const { data: { user } } = await supabase.auth.getUser();
+            console.log('[DEBUG] STEP 3: Current authenticated user:', user ? user.email : 'None');
+            console.log('[DEBUG] STEP 3: Current session:', session ? session : 'None');
+            
             if (user) {
                 console.log('[DEBUG] Login Success: detected user', user.email);
                 // SECURITY CHECK: Is email verified?
@@ -783,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function verifyRouteProtection(targetPage) {
-        console.log(`[DEBUG] Routing requested to page: "${targetPage}"`);
+        console.log(`[DEBUG] STEP 7: Routing requested to page: "${targetPage}"`);
         const isGuest = localStorage.getItem('user_email') === 'guest@fundedjobs.ai';
         const onboardingCompleted = localStorage.getItem('onboarding_completed') === 'true';
         let hasSession = false;
@@ -796,34 +800,42 @@ document.addEventListener('DOMContentLoaded', () => {
                     const isEmailConfirmed = user.email_confirmed_at || user.confirmed_at || user.email_confirmed;
                     if (isEmailConfirmed) {
                         hasSession = true;
-                        console.log('[DEBUG] Active and verified session detected for:', user.email);
+                        console.log('[DEBUG] STEP 7: Active and verified session detected for:', user.email);
                     } else {
-                        console.log('[DEBUG] Session user is unverified:', user.email);
+                        console.log('[DEBUG] STEP 7: Session user is unverified:', user.email);
                     }
                 } else {
-                    console.log('[DEBUG] Session missing');
+                    console.log('[DEBUG] STEP 7: Session missing');
                 }
             } catch (err) {
-                console.error('[DEBUG] Session verification error:', err);
+                console.error('[DEBUG] STEP 7: Session verification error:', err);
             }
         } else {
-            console.log('[DEBUG] Supabase client unavailable, relying on guest checks');
+            console.log('[DEBUG] STEP 7: Supabase client unavailable, relying on guest checks');
         }
 
         const isPublicPage = targetPage === 'login';
         if (isPublicPage) {
             if (hasSession || isGuest) {
-                console.log('[DEBUG] Authenticated user/guest attempted to access public login page. Redirecting.');
+                console.log('[DEBUG] STEP 7: Authenticated user/guest attempted to access public login page. Redirecting.');
                 return onboardingCompleted ? 'dashboard' : 'onboarding-step-1';
             }
             return 'login';
         }
 
         if (hasSession || isGuest) {
+            if (targetPage === 'dashboard' && !onboardingCompleted) {
+                console.log('[DEBUG] STEP 7: User attempted to access dashboard before completing onboarding. Redirecting to onboarding step 1.');
+                return 'onboarding-step-1';
+            }
+            if (targetPage.startsWith('onboarding-') && onboardingCompleted) {
+                console.log('[DEBUG] STEP 7: User already completed onboarding. Redirecting to dashboard.');
+                return 'dashboard';
+            }
             return targetPage;
         }
 
-        console.log('[DEBUG] Unauthenticated access blocked. Redirecting to login.');
+        console.log('[DEBUG] STEP 7: Unauthenticated access blocked. Redirecting to login.');
         return 'login';
     }
 
@@ -912,8 +924,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = emailInput ? emailInput.value.trim() : '';
             const password = passwordInput ? passwordInput.value : '';
             const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
-            console.log('[DEBUG] Signup started');
-            console.log('[DEBUG] Sign up request: email', email);
+            console.log('[DEBUG] STEP 1: Signup request started');
+            console.log('[DEBUG] STEP 1: Email entered:', email);
             
             // Client-side validations
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -946,13 +958,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (supabase) {
                     const { data, error } = await supabase.auth.signUp({ email, password });
                     if (error) {
-                        console.error('[DEBUG] Signup failure:', error.message);
+                        console.error('[DEBUG] STEP 2: Signup failure - Full error message:', error);
                         alert('Sign Up Error: ' + error.message);
                         return;
                     }
-                    console.log('[DEBUG] Signup success');
+                    console.log('[DEBUG] STEP 2: Signup response:', data);
                     if (data && data.user) {
-                        console.log('[DEBUG] User ID returned:', data.user.id);
+                        console.log('[DEBUG] STEP 2: User ID returned:', data.user.id);
                     }
                     // Call signOut immediately to ensure they are not logged in without verification
                     try {
@@ -964,12 +976,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     showLogin();
                     await updateActivePage('login');
                 } else {
-                    console.log('[DEBUG] Signup success');
+                    console.log('[DEBUG] STEP 2: Signup response: local success (Guest Mode)');
                     localStorage.setItem('user_email', email);
                     await handleAuthSuccess();
                 }
             } catch (err) {
-                console.error('[DEBUG] Signup failure:', err.message || err);
+                console.error('[DEBUG] STEP 2: Signup failure - Full error message:', err.message || err);
                 alert('Sign Up Error: ' + err.message);
             }
         });
@@ -1328,39 +1340,73 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (user) {
                     console.log('[DEBUG] savePreferences: Authenticated user found:', user.email, 'ID:', user.id);
                     
+                    const profilePayload = {
+                        id: user.id,
+                        first_name: firstName,
+                        email: user.email,
+                        job_title: title,
+                        experience: exp
+                    };
+                    const preferencesPayload = {
+                        user_id: user.id,
+                        preferred_roles: roles,
+                        preferred_locations: locations,
+                        startup_stages: stages.join(', '),
+                        email_alerts: emailAlerts
+                    };
+                    console.log('[DEBUG] STEP 4: Profile payload:', profilePayload);
+                    console.log('[DEBUG] STEP 4: Preferences payload:', preferencesPayload);
+
                     // Upsert to fj_profiles
-                    console.log('[DEBUG] savePreferences: Attempting to upsert profile to fj_profiles...');
+                    console.log('[DEBUG] STEP 4: Attempting to upsert profile to fj_profiles...');
                     const { error: profileErr } = await supabase
                         .from('fj_profiles')
-                        .upsert({
-                            id: user.id,
-                            first_name: firstName,
-                            email: user.email,
-                            job_title: title,
-                            experience: exp
-                        });
+                        .upsert(profilePayload);
                     if (profileErr) {
-                        console.error('[DEBUG] Profile insert failure. Full error:', profileErr);
+                        console.error('[DEBUG] STEP 4: Profile insert failure. Full error:', profileErr);
+                        console.error('[DEBUG] STEP 6: Profile RLS/database error:', profileErr);
                     } else {
-                        console.log('[DEBUG] Profile insert success');
+                        console.log('[DEBUG] STEP 4: Profile insert success');
                     }
 
                     // Upsert to fj_preferences
-                    console.log('[DEBUG] savePreferences: Attempting to upsert preferences to fj_preferences...');
+                    console.log('[DEBUG] STEP 4: Attempting to upsert preferences to fj_preferences...');
                     const { error: prefErr } = await supabase
                         .from('fj_preferences')
-                        .upsert({
-                            user_id: user.id,
-                            preferred_roles: roles,
-                            preferred_locations: locations,
-                            startup_stages: stages.join(', '),
-                            email_alerts: emailAlerts
-                        }, { onConflict: 'user_id' });
+                        .upsert(preferencesPayload, { onConflict: 'user_id' });
                     if (prefErr) {
-                        console.error('[DEBUG] Preferences insert failure. Full error:', prefErr);
+                        console.error('[DEBUG] STEP 4: Preferences insert failure. Full error:', prefErr);
+                        console.error('[DEBUG] STEP 6: Preferences RLS/database error:', prefErr);
                     } else {
-                        console.log('[DEBUG] Preferences insert success');
+                        console.log('[DEBUG] STEP 4: Preferences insert success');
                     }
+
+                    // STEP 5: Database Verification
+                    console.log('[DEBUG] STEP 5: Database Verification immediately after save attempt...');
+                    try {
+                        const { data: profRows, error: profVerErr, count: profCount } = await supabase
+                            .from('fj_profiles')
+                            .select('*', { count: 'exact' });
+                        console.log('[DEBUG] STEP 5: SELECT COUNT(*) FROM fj_profiles count result:', profCount, 'rows returned:', profRows ? profRows.length : 0);
+                        if (profVerErr) {
+                            console.error('[DEBUG] STEP 5: profile verify query error:', profVerErr);
+                        }
+                    } catch (verifyEx) {
+                        console.error('[DEBUG] STEP 5: Exception during profiles count verification:', verifyEx);
+                    }
+
+                    try {
+                        const { data: prefRows, error: prefVerErr, count: prefCount } = await supabase
+                            .from('fj_preferences')
+                            .select('*', { count: 'exact' });
+                        console.log('[DEBUG] STEP 5: SELECT COUNT(*) FROM fj_preferences count result:', prefCount, 'rows returned:', prefRows ? prefRows.length : 0);
+                        if (prefVerErr) {
+                            console.error('[DEBUG] STEP 5: preferences verify query error:', prefVerErr);
+                        }
+                    } catch (verifyEx) {
+                        console.error('[DEBUG] STEP 5: Exception during preferences count verification:', verifyEx);
+                    }
+
                 } else {
                     console.warn('[DEBUG] savePreferences: No authenticated user session found (Guest Mode). Supabase database writes skipped.');
                 }
@@ -1817,9 +1863,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (supabase) {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
+                const user = session ? session.user : null;
+                console.log('[DEBUG] STEP 3: Current authenticated user:', user ? user.email : 'None');
+                console.log('[DEBUG] STEP 3: Current session:', session ? session : 'None');
                 if (session && session.user) {
-                    console.log('[DEBUG] Session detected:', session.user.email);
-                    const user = session.user;
                     const isEmailConfirmed = user.email_confirmed_at || user.confirmed_at || user.email_confirmed;
                     if (!isEmailConfirmed) {
                         console.log('[DEBUG] Session user is unverified. Logging out.');
