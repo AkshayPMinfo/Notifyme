@@ -27,7 +27,9 @@ load_dotenv()
 # Supabase Credentials
 SUPABASE_URL = "https://vpmngcagfxyqvemdgzav.supabase.co"
 SUPABASE_ANON_KEY = "sb_publishable_YG5n4OWJxPLrkWN61rMXoA_LNUdE8IJ"
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", SUPABASE_ANON_KEY)
+SUPABASE_SECRET_KEY = os.environ.get("SUPABASE_SECRET_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+SUPABASE_KEY = SUPABASE_SECRET_KEY if SUPABASE_SECRET_KEY else SUPABASE_ANON_KEY
+
 
 # Email Services Config
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
@@ -374,6 +376,33 @@ Links:
 
 def run_discovery():
     print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Starting Discovery scan...")
+    
+    # Print diagnostics
+    print("\n--- [BACKEND DIAGNOSTICS] ---")
+    using_secret = (SUPABASE_KEY != SUPABASE_ANON_KEY)
+    print(f"Supabase URL: {SUPABASE_URL}")
+    print(f"Using Secret/Service Key: {using_secret}")
+    
+    profiles = make_supabase_request("GET", "fj_profiles")
+    preferences = make_supabase_request("GET", "fj_preferences")
+    alerts_enabled = make_supabase_request("GET", "fj_preferences", query_params="email_alerts=eq.true")
+    
+    if profiles is not None:
+        print(f"fj_profiles row count: {len(profiles)}")
+    else:
+        print("fj_profiles row count: Failed to query")
+        
+    if preferences is not None:
+        print(f"fj_preferences row count: {len(preferences)}")
+    else:
+        print("fj_preferences row count: Failed to query")
+        
+    if alerts_enabled is not None:
+        print(f"email_alerts=true row count: {len(alerts_enabled)}")
+    else:
+        print("email_alerts=true row count: Failed to query")
+    print("-----------------------------\n")
+
     
     # 1. Fetch currently processed article URLs from fj_processed_articles
     processed_articles = make_supabase_request("GET", "fj_processed_articles")
