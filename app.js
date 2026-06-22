@@ -830,12 +830,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function updateActivePage(newPage) {
         const resolvedPage = await verifyRouteProtection(newPage);
         activePage = resolvedPage;
-        renderActivePage();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         
         if (activePage === 'dashboard') {
             await loadDashboardData();
         }
+        
+        renderActivePage();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // -----------------------------------------------------------------
@@ -911,6 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = emailInput ? emailInput.value.trim() : '';
             const password = passwordInput ? passwordInput.value : '';
             const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+            console.log('[DEBUG] Signup started');
             console.log('[DEBUG] Sign up request: email', email);
             
             // Client-side validations
@@ -944,11 +946,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (supabase) {
                     const { data, error } = await supabase.auth.signUp({ email, password });
                     if (error) {
-                        console.error('[DEBUG] Sign up failure:', error.message);
+                        console.error('[DEBUG] Signup failure:', error.message);
                         alert('Sign Up Error: ' + error.message);
                         return;
                     }
-                    console.log('[DEBUG] Sign up success: account created, verification email sent');
+                    console.log('[DEBUG] Signup success');
+                    if (data && data.user) {
+                        console.log('[DEBUG] User ID returned:', data.user.id);
+                    }
                     // Call signOut immediately to ensure they are not logged in without verification
                     try {
                         await supabase.auth.signOut();
@@ -959,11 +964,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     showLogin();
                     await updateActivePage('login');
                 } else {
+                    console.log('[DEBUG] Signup success');
                     localStorage.setItem('user_email', email);
                     await handleAuthSuccess();
                 }
             } catch (err) {
-                console.error('[DEBUG] Sign up submit exception occurred:', err);
+                console.error('[DEBUG] Signup failure:', err.message || err);
                 alert('Sign Up Error: ' + err.message);
             }
         });
@@ -1334,9 +1340,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             experience: exp
                         });
                     if (profileErr) {
-                        console.error('[DEBUG] savePreferences: Profile save failure. Full error:', profileErr);
+                        console.error('[DEBUG] Profile insert failure. Full error:', profileErr);
                     } else {
-                        console.log('[DEBUG] savePreferences: Profile save success!');
+                        console.log('[DEBUG] Profile insert success');
                     }
 
                     // Upsert to fj_preferences
@@ -1351,9 +1357,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             email_alerts: emailAlerts
                         }, { onConflict: 'user_id' });
                     if (prefErr) {
-                        console.error('[DEBUG] savePreferences: Preferences save failure. Full error:', prefErr);
+                        console.error('[DEBUG] Preferences insert failure. Full error:', prefErr);
                     } else {
-                        console.log('[DEBUG] savePreferences: Preferences save success!');
+                        console.log('[DEBUG] Preferences insert success');
                     }
                 } else {
                     console.warn('[DEBUG] savePreferences: No authenticated user session found (Guest Mode). Supabase database writes skipped.');
@@ -1522,9 +1528,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 experience: newExp
                             });
                         if (profileErr) {
-                            console.error('[DEBUG] Profile edit form: Profile update failure. Full error:', profileErr);
+                            console.error('[DEBUG] Profile insert failure. Full error:', profileErr);
                         } else {
-                            console.log('[DEBUG] Profile edit form: Profile update success!');
+                            console.log('[DEBUG] Profile insert success');
                         }
 
                         // Upsert to fj_preferences
@@ -1539,9 +1545,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 email_alerts: localStorage.getItem('pref_email_alerts') === 'true'
                             }, { onConflict: 'user_id' });
                         if (prefErr) {
-                            console.error('[DEBUG] Profile edit form: Preferences update failure. Full error:', prefErr);
+                            console.error('[DEBUG] Preferences insert failure. Full error:', prefErr);
                         } else {
-                            console.log('[DEBUG] Profile edit form: Preferences update success!');
+                            console.log('[DEBUG] Preferences insert success');
                         }
                     } else {
                         console.warn('[DEBUG] Profile edit form: No user found. Updates skipped.');
