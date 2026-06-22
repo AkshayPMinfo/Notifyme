@@ -870,6 +870,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = passwordInput ? passwordInput.value : '';
             console.log('[DEBUG] Login request: email', email);
             
+            // Client-side validations
+            if (!email) {
+                alert('Sign In Error: Please enter your email address.');
+                return;
+            }
+            if (!password) {
+                alert('Sign In Error: Please enter your password.');
+                return;
+            }
+            
             try {
                 if (supabase) {
                     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -896,9 +906,39 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const emailInput = document.getElementById('signup-email');
             const passwordInput = document.getElementById('signup-password');
+            const confirmPasswordInput = document.getElementById('signup-confirm-password');
+            
             const email = emailInput ? emailInput.value.trim() : '';
             const password = passwordInput ? passwordInput.value : '';
+            const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
             console.log('[DEBUG] Sign up request: email', email);
+            
+            // Client-side validations
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                alert('Sign Up Error: Please enter an email address.');
+                return;
+            }
+            if (!emailRegex.test(email)) {
+                alert('Sign Up Error: Please enter a valid email address.');
+                return;
+            }
+            if (!password) {
+                alert('Sign Up Error: Please enter a password.');
+                return;
+            }
+            if (password.length < 6) {
+                alert('Sign Up Error: Password must be at least 6 characters long.');
+                return;
+            }
+            if (!confirmPassword) {
+                alert('Sign Up Error: Please confirm your password.');
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert('Sign Up Error: Passwords do not match.');
+                return;
+            }
             
             try {
                 if (supabase) {
