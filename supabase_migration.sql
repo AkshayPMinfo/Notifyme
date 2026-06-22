@@ -609,5 +609,32 @@ BEGIN
 END
 $$;
 
+-- 42. Auto-confirm new signups to bypass email verification requirement during testing
+CREATE OR REPLACE FUNCTION public.fj_handle_new_user_confirmation()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE auth.users
+    SET email_confirmed_at = now(),
+        confirmed_at = now()
+    WHERE id = new.id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create the trigger on auth.users if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'fj_trigger_on_auth_user_created_confirm'
+    ) THEN
+        CREATE TRIGGER fj_trigger_on_auth_user_created_confirm
+            AFTER INSERT ON auth.users
+            FOR EACH ROW
+            EXECUTE FUNCTION public.fj_handle_new_user_confirmation();
+    END IF;
+END
+$$;
+
 
 
