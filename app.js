@@ -1,4 +1,284 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // E2E Test Dashboard Overlay Controller
+    const qaDashboardEl = document.getElementById('qa-test-dashboard');
+    const qaFloatingBadge = document.getElementById('qa-floating-badge');
+    const qaCompletionModal = document.getElementById('qa-completion-modal');
+    
+    if (qaDashboardEl) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isTestActive = urlParams.get('test') === 'true' || localStorage.getItem('e2e_test_active') === 'true';
+        
+        if (isTestActive) {
+            localStorage.setItem('e2e_test_active', 'true');
+            qaDashboardEl.style.setProperty('display', 'flex', 'important');
+            if (qaFloatingBadge) qaFloatingBadge.style.setProperty('display', 'flex', 'important');
+            
+            // Default/Initial State
+            let state = {
+                currentStepIndex: 1,
+                currentStepName: "Clean database & navigate to local server",
+                percent: 10,
+                timerSeconds: 180,
+                stepsStatus: {
+                    "1": "running", "2": "pending", "3": "pending", "4": "pending",
+                    "5": "pending", "6": "pending", "7": "pending", "8": "running", "9": "pending"
+                },
+                logs: ["[SYSTEM] Ready to begin automated test..."],
+                screens: {
+                    "auth": "pending",
+                    "onboarding": "pending",
+                    "success": "pending",
+                    "dashboard": "pending"
+                }
+            };
+            
+            // Try to restore state from sessionStorage
+            const savedStateStr = sessionStorage.getItem('qa_test_dashboard_state');
+            if (savedStateStr) {
+                try {
+                    const savedState = JSON.parse(savedStateStr);
+                    state = { ...state, ...savedState };
+                } catch (e) {
+                    console.error("Error parsing saved E2E test state:", e);
+                }
+            }
+            
+            // UI Update Functions
+            const renderState = () => {
+                // Update badge and progress text
+                const badgeEl = document.getElementById('qa-current-step-badge');
+                if (badgeEl) badgeEl.innerText = `Step ${state.currentStepIndex}/9: ${state.currentStepName}`;
+                
+                const progressText = document.getElementById('qa-progress-text');
+                if (progressText) progressText.innerText = `${state.percent}% Complete`;
+                
+                const progressFill = document.getElementById('qa-progress-fill');
+                if (progressFill) progressFill.style.width = `${state.percent}%`;
+                
+                const badgeText = document.getElementById('qa-badge-text');
+                if (badgeText) badgeText.innerText = `Test Active: ${state.percent}%`;
+                
+                // Update Timer
+                const timerEl = document.getElementById('qa-timer-text');
+                if (timerEl) {
+                    const min = Math.floor(state.timerSeconds / 60);
+                    const sec = state.timerSeconds % 60;
+                    timerEl.innerText = `Est. remaining: ${min}m ${sec.toString().padStart(2, '0')}s`;
+                }
+                
+                // Update Steps List in DOM
+                for (let step = 1; step <= 9; step++) {
+                    const stepEl = document.querySelector(`#qa-steps-checklist li[data-step="${step}"]`);
+                    if (stepEl) {
+                        const status = state.stepsStatus[step] || 'pending';
+                        stepEl.className = status;
+                    }
+                }
+                
+                // Update Logs
+                const logsBox = document.getElementById('qa-console-log');
+                if (logsBox) {
+                    logsBox.innerHTML = state.logs.map(log => {
+                        let logClass = '';
+                        if (log.includes('[SYSTEM]')) logClass = 'system';
+                        else if (log.includes('[BROWSER CONSOLE]')) logClass = 'browser-console';
+                        else if (log.includes('[OK]') || log.includes('[SUCCESS]')) logClass = 'success';
+                        else if (log.includes('[ERROR]') || log.includes('[EXCEPTION]')) logClass = 'error';
+                        return `<div class="log-line ${logClass}">${log}</div>`;
+                    }).join('');
+                    logsBox.scrollTop = logsBox.scrollHeight;
+                }
+                
+                // Update screens tested
+                for (const [screenKey, status] of Object.entries(state.screens)) {
+                    const indicator = document.querySelector(`#screen-card-${screenKey} .screen-status-indicator`);
+                    if (indicator) {
+                        indicator.className = `screen-status-indicator ${status}`;
+                    }
+                }
+            };
+            
+            // Intercept console.log to write to E2E log viewer
+            const originalLog = console.log;
+            console.log = (...args) => {
+                originalLog.apply(console, args);
+                const logText = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+                if (window.qaDashboard && !logText.includes('qa_test_dashboard_state') && !logText.includes('[DEBUG] STEP 5:')) {
+                    state.logs.push(`[BROWSER CONSOLE] ${logText}`);
+                    if (state.logs.length > 150) {
+                        state.logs.shift();
+                    }
+                    saveState();
+                    renderState();
+                }
+            };
+            
+            const saveState = () => {
+                sessionStorage.setItem('qa_test_dashboard_state', JSON.stringify(state));
+            };
+            
+            // Timer Loop
+            const timerInterval = setInterval(() => {
+                if (state.timerSeconds > 0) {
+                    state.timerSeconds--;
+                    saveState();
+                    const timerEl = document.getElementById('qa-timer-text');
+                    if (timerEl) {
+                        const min = Math.floor(state.timerSeconds / 60);
+                        const sec = state.timerSeconds % 60;
+                        timerEl.innerText = `Est. remaining: ${min}m ${sec.toString().padStart(2, '0')}s`;
+                    }
+                } else {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+            
+            // Expand/Collapse Toggle
+            const toggleBtn = document.getElementById('btn-qa-toggle-details');
+            const drawer = document.getElementById('qa-details-drawer');
+            if (toggleBtn && drawer) {
+                toggleBtn.addEventListener('click', () => {
+                    const isExpanded = drawer.classList.contains('expanded');
+                    if (isExpanded) {
+                        drawer.classList.remove('expanded');
+                        drawer.classList.add('collapsed');
+                        toggleBtn.querySelector('.chevron-icon').style.transform = 'rotate(0deg)';
+                    } else {
+                        drawer.classList.remove('collapsed');
+                        drawer.classList.add('expanded');
+                        toggleBtn.querySelector('.chevron-icon').style.transform = 'rotate(180deg)';
+                    }
+                });
+            }
+            
+            // Visibility change handling for Floating Indicator
+            document.addEventListener('visibilitychange', () => {
+                const badgeDot = document.querySelector('#qa-floating-badge .qa-badge-dot');
+                if (badgeDot) {
+                    if (document.hidden) {
+                        badgeDot.className = 'qa-badge-dot paused';
+                        const badgeText = document.getElementById('qa-badge-text');
+                        if (badgeText) badgeText.innerText = `Test Running (BG)`;
+                    } else {
+                        badgeDot.className = 'qa-badge-dot running';
+                        const badgeText = document.getElementById('qa-badge-text');
+                        if (badgeText) badgeText.innerText = `Test Active: ${state.percent}%`;
+                    }
+                }
+            });
+            
+            // Define global API under window.qaDashboard
+            window.qaDashboard = {
+                updateStep: (stepIndex, stepName, percent, remainingTimeSecs) => {
+                    state.currentStepIndex = stepIndex;
+                    state.currentStepName = stepName;
+                    state.percent = percent;
+                    if (remainingTimeSecs !== undefined) {
+                        state.timerSeconds = remainingTimeSecs;
+                    }
+                    
+                    // Mark previous steps as completed
+                    for (let i = 1; i < stepIndex; i++) {
+                        state.stepsStatus[i] = 'completed';
+                    }
+                    state.stepsStatus[stepIndex] = 'running';
+                    
+                    // Map active screen states based on current step
+                    if (stepIndex === 1) state.screens.auth = 'testing';
+                    else if (stepIndex === 2) { state.screens.auth = 'success'; state.screens.onboarding = 'testing'; }
+                    else if (stepIndex === 5) { state.screens.onboarding = 'success'; state.screens.success = 'testing'; }
+                    else if (stepIndex === 6) { state.screens.success = 'success'; state.screens.dashboard = 'testing'; }
+                    else if (stepIndex === 8) { state.screens.dashboard = 'success'; }
+                    
+                    saveState();
+                    renderState();
+                },
+                addLog: (text) => {
+                    state.logs.push(text);
+                    if (state.logs.length > 150) {
+                        state.logs.shift();
+                    }
+                    saveState();
+                    renderState();
+                },
+                setStepStatus: (stepIndex, status) => {
+                    state.stepsStatus[stepIndex] = status;
+                    saveState();
+                    renderState();
+                },
+                setFinalReport: (reportData) => {
+                    clearInterval(timerInterval);
+                    
+                    const badgeDot = document.querySelector('#qa-floating-badge .qa-badge-dot');
+                    if (badgeDot) {
+                        badgeDot.className = reportData.success ? 'qa-badge-dot completed' : 'qa-badge-dot failed';
+                    }
+                    
+                    qaDashboardEl.style.setProperty('display', 'none', 'important');
+                    if (qaFloatingBadge) qaFloatingBadge.style.setProperty('display', 'none', 'important');
+                    
+                    if (qaCompletionModal) {
+                        qaCompletionModal.style.setProperty('display', 'flex', 'important');
+                        
+                        const iconContainer = document.getElementById('qa-modal-icon-container');
+                        const modalTitle = document.getElementById('qa-modal-title');
+                        const statStatus = document.getElementById('qa-stat-status');
+                        const statDuration = document.getElementById('qa-stat-duration');
+                        const statScreens = document.getElementById('qa-stat-screens');
+                        const issuesContainer = document.getElementById('qa-modal-issues-container');
+                        const issuesList = document.getElementById('qa-modal-issues-list');
+                        
+                        if (iconContainer) {
+                            iconContainer.className = `qa-modal-icon ${reportData.success ? 'success' : 'failed'}`;
+                            iconContainer.innerHTML = reportData.success 
+                                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="24" height="24"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+                                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="24" height="24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                        }
+                        
+                        if (modalTitle) modalTitle.innerText = reportData.success ? "E2E Test Run Passed!" : "E2E Test Run Failed";
+                        if (statStatus) {
+                            statStatus.innerText = reportData.success ? "Passed" : "Failed";
+                            statStatus.className = `qa-stat-val ${reportData.success ? 'success' : 'failed'}`;
+                        }
+                        if (statDuration) statDuration.innerText = reportData.duration || '0.0s';
+                        
+                        let successScreensCount = 0;
+                        for (const status of Object.values(state.screens)) {
+                            if (status === 'success') successScreensCount++;
+                        }
+                        if (statScreens) statScreens.innerText = `${successScreensCount} / 4`;
+                        
+                        if (reportData.issues && reportData.issues.length > 0) {
+                            if (issuesContainer) issuesContainer.style.display = 'block';
+                            if (issuesList) {
+                                issuesList.innerHTML = reportData.issues.map(iss => `<li>${iss}</li>`).join('');
+                            }
+                        } else {
+                            if (issuesContainer) issuesContainer.style.display = 'none';
+                        }
+                        
+                        let countdownSeconds = 10;
+                        const closingText = document.getElementById('qa-closing-countdown');
+                        
+                        const closingInterval = setInterval(() => {
+                            countdownSeconds--;
+                            if (closingText) {
+                                closingText.innerText = `Returning to Antigravity chat window in ${countdownSeconds}s...`;
+                            }
+                            if (countdownSeconds <= 0) {
+                                clearInterval(closingInterval);
+                                localStorage.removeItem('e2e_test_active');
+                                sessionStorage.removeItem('qa_test_dashboard_state');
+                            }
+                        }, 1000);
+                    }
+                }
+            };
+            
+            renderState();
+        }
+    }
+
     // DOM Elements - Login Screen
     const toggleLogin = document.getElementById('toggle-login');
     const toggleSignup = document.getElementById('toggle-signup');
@@ -35,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // STATE MACHINE / SCREEN ROUTER
     // -----------------------------------------------------------------
     let activePage = 'login';
+    window.activePage = activePage;
     let customLocations = [];
 
     function syncPreferencesToFormAndProfile() {
@@ -140,6 +421,47 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentStartups = [];
     let currentMatchedJobs = [];
 
+    // Developer Mode State and Initialization
+    let devMode = localStorage.getItem('dev_mode') === 'true' || window.location.search.includes('dev=true') || window.location.search.includes('admin=true');
+    if (window.location.search.includes('dev=true') || window.location.search.includes('admin=true')) {
+        localStorage.setItem('dev_mode', 'true');
+        devMode = true;
+    }
+
+    function syncDevMode() {
+        const debugStatusPanel = document.getElementById('debug-status-panel');
+        const matchingDebugSection = document.getElementById('matching-debug-section');
+        const devBadge = document.getElementById('dev-mode-badge');
+        
+        // Sync local flag with storage
+        devMode = localStorage.getItem('dev_mode') === 'true';
+        
+        if (devMode) {
+            if (debugStatusPanel) debugStatusPanel.style.setProperty('display', 'block', 'important');
+            if (matchingDebugSection) matchingDebugSection.style.setProperty('display', 'block', 'important');
+            if (devBadge) devBadge.style.setProperty('display', 'inline-block', 'important');
+        } else {
+            if (debugStatusPanel) debugStatusPanel.style.setProperty('display', 'none', 'important');
+            if (matchingDebugSection) matchingDebugSection.style.setProperty('display', 'none', 'important');
+            if (devBadge) devBadge.style.setProperty('display', 'none', 'important');
+        }
+    }
+    window.syncDevMode = syncDevMode;
+
+    // Toggle dev mode using Ctrl+Shift+D keyboard shortcut
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
+            e.preventDefault();
+            devMode = !devMode;
+            localStorage.setItem('dev_mode', devMode.toString());
+            syncDevMode();
+            showToast(devMode ? 'Developer Mode Enabled' : 'Developer Mode Disabled');
+        }
+    });
+
+    // Run initial sync
+    syncDevMode();
+
     function timeAgo(dateString) {
         try {
             const now = new Date();
@@ -187,6 +509,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const startupsGrid = document.querySelector('.startup-cards-grid');
         const alertsList = document.querySelector('.email-alerts-list');
+
+        // Render skeletons in grid during data loading
+        if (startupsGrid) {
+            startupsGrid.innerHTML = `
+                <div class="skeleton-card">
+                    <div class="skeleton-logo"></div>
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line subtitle"></div>
+                    <div class="skeleton-line desc"></div>
+                    <div class="skeleton-line footer"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-logo"></div>
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line subtitle"></div>
+                    <div class="skeleton-line desc"></div>
+                    <div class="skeleton-line footer"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-logo"></div>
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line subtitle"></div>
+                    <div class="skeleton-line desc"></div>
+                    <div class="skeleton-line footer"></div>
+                </div>
+            `;
+        }
 
         let startups = [];
         let jobs = [];
@@ -537,6 +886,20 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="startup-funding-amount">${startup.funding_amount}</div>
                         </div>
                         <p class="startup-desc">${startup.description || 'No description available.'}</p>
+                        <div class="startup-links" style="margin: 12px 0 4px 0; display: flex; gap: 15px;">
+                            ${startup.website ? `
+                                <a href="${startup.website}" target="_blank" class="card-link-btn" style="color: #3b82f6; text-decoration: none; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                    Website
+                                </a>
+                            ` : ''}
+                            ${startup.source_url ? `
+                                <a href="${startup.source_url}" target="_blank" class="card-link-btn" style="color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                    Source Article
+                                </a>
+                            ` : ''}
+                        </div>
                         <div class="startup-card-footer">
                             <div class="footer-left">
                                 <div class="avatar-group">
@@ -828,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('[DEBUG] STEP 7: User attempted to access dashboard before completing onboarding. Redirecting to onboarding step 1.');
                 return 'onboarding-step-1';
             }
-            if (targetPage.startsWith('onboarding-') && onboardingCompleted) {
+            if (targetPage.startsWith('onboarding-') && targetPage !== 'onboarding-success' && onboardingCompleted) {
                 console.log('[DEBUG] STEP 7: User already completed onboarding. Redirecting to dashboard.');
                 return 'dashboard';
             }
@@ -842,6 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function updateActivePage(newPage) {
         const resolvedPage = await verifyRouteProtection(newPage);
         activePage = resolvedPage;
+        window.activePage = resolvedPage;
         
         if (activePage === 'dashboard') {
             await loadDashboardData();
@@ -893,12 +1257,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span>Signing In...</span>';
+            }
+            
             try {
                 if (supabase) {
                     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) {
                         console.error('[DEBUG] Login failure / authentication error:', error.message);
                         alert('Sign In Error: ' + error.message);
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }
                         return;
                     }
                 } else {
@@ -909,6 +1284,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error('[DEBUG] Login submit exception occurred:', err);
                 alert('Sign In Error: ' + err.message);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
             }
         });
     }
@@ -954,12 +1334,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            const submitBtn = signupForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span>Creating Account...</span>';
+            }
+            
             try {
                 if (supabase) {
                     const { data, error } = await supabase.auth.signUp({ email, password });
                     if (error) {
                         console.error('[DEBUG] STEP 2: Signup failure - Full error message:', error);
                         alert('Sign Up Error: ' + error.message);
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }
                         return;
                     }
                     console.log('[DEBUG] STEP 2: Signup response:', data);
@@ -991,6 +1382,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error('[DEBUG] STEP 2: Signup failure - Full error message:', err.message || err);
                 alert('Sign Up Error: ' + err.message);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
             }
         });
     }
@@ -1011,6 +1407,23 @@ document.addEventListener('DOMContentLoaded', () => {
             await handleAuthSuccess();
         });
     }
+
+    // Forgot Password entry trigger
+    const forgotPasswordLink = document.getElementById('forgot-password');
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Forgot Password clicked');
+            const emailInput = document.getElementById('login-email');
+            const emailVal = emailInput ? emailInput.value.trim() : '';
+            if (emailVal) {
+                showToast(`Simulated: Recovery link sent to ${emailVal}`);
+            } else {
+                alert('Please enter your email address in the email field first.');
+            }
+        });
+    }
+
 
     // -----------------------------------------------------------------
     // WIZARD VALIDATIONS & INTERACTIVES
@@ -1564,7 +1977,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Write to Supabase if logged in
             if (supabase) {
-                                  console.log('[DEBUG] Profile edit form: Fetching user...');
+                try {
+                    console.log('[DEBUG] Profile edit form: Fetching user...');
                     const { data: { user }, error: userErr } = await supabase.auth.getUser();
                     if (userErr) console.error('[DEBUG] Profile edit form: getUser error:', userErr);
                     if (user) {
@@ -1639,6 +2053,15 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('pref_email_alerts');
             localStorage.removeItem('onboarding_completed');
             localStorage.removeItem('user_email');
+            localStorage.removeItem('e2e_test_active');
+            sessionStorage.removeItem('test_timer_seconds');
+            sessionStorage.removeItem('qa_test_dashboard_state');
+            const qaDashboard = document.getElementById('qa-test-dashboard');
+            const qaBadge = document.getElementById('qa-floating-badge');
+            const qaModal = document.getElementById('qa-completion-modal');
+            if (qaDashboard) qaDashboard.style.setProperty('display', 'none', 'important');
+            if (qaBadge) qaBadge.style.setProperty('display', 'none', 'important');
+            if (qaModal) qaModal.style.setProperty('display', 'none', 'important');
             
             // Reset active navigation item
             navItems.forEach(btn => btn.classList.remove('active'));
@@ -1844,7 +2267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             user_id: '00000000-0000-0000-0000-000000000000',
                             startup_id: currentStartups.length > 0 ? currentStartups[0].id : null,
                             job_title: 'Product Manager',
-                            email_sent: result.status === 'sent' || result.status === 'simulated',
+                            email_sent: true,
                             sent_at: new Date().toISOString()
                         };
                         const logs = JSON.parse(localStorage.getItem('guest_email_logs')) || [];
@@ -1853,7 +2276,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     await loadDashboardData();
                 } else {
-                    alert('Failed to send test email: ' + result.status);
+                    const errMsg = result.status && result.status.message 
+                        ? result.status.message 
+                        : (typeof result.status === 'object' ? JSON.stringify(result.status) : result.status);
+                    alert('Failed to send test email: ' + errMsg);
                 }
             } catch (err) {
                 console.error('Error sending test email:', err);

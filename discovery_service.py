@@ -7,7 +7,11 @@ import ssl
 import re
 import urllib.request
 import urllib.parse
+import urllib.error
 import xml.etree.ElementTree as ET
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from datetime import datetime
 
 # Simple .env loader
@@ -163,12 +167,37 @@ def parse_rss_feed(xml_data):
     return discovered
 
 def send_email(to_email, subject, html_content, body_text_fallback=""):
+    smtp_user = os.environ.get("SMTP_USER")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+    
+    if smtp_user and smtp_password:
+        host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+        port = int(os.environ.get("SMTP_PORT", "587"))
+        print(f"[EMAIL] Sending alert via SMTP ({host}:{port}) to: {to_email}")
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = smtp_user
+            msg['To'] = to_email
+            msg.attach(MIMEText(html_content, 'html'))
+            
+            server = smtplib.SMTP(host, port)
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, to_email, msg.as_string())
+            server.quit()
+            return True, "sent_smtp"
+        except Exception as e:
+            print(f"[ERROR] SMTP sending failed: {e}")
+            return False, f"failed: {e}"
+
     if RESEND_API_KEY:
         print(f"[EMAIL] Sending alert via Resend to: {to_email}")
         url = "https://api.resend.com/emails"
         headers = {
             "Authorization": f"Bearer {RESEND_API_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
         }
         payload = {
             "from": RESEND_FROM_EMAIL,
@@ -179,7 +208,12 @@ def send_email(to_email, subject, html_content, body_text_fallback=""):
         req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
         try:
             with urllib.request.urlopen(req, context=SSL_CONTEXT) as res:
-                return True, "sent"
+                res_body = res.read().decode("utf-8")
+                return True, res_body
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8")
+            print(f"[ERROR] Resend sending failed: HTTP {e.code} - {err_body}")
+            return False, err_body
         except Exception as e:
             print(f"[ERROR] Resend sending failed: {e}")
             return False, f"failed: {e}"
@@ -302,9 +336,17 @@ def match_user_and_notify(startup, jobs):
                 print(f"  [SKIP] Job '{job['job_title']}' at '{job['location']}': " + " AND ".join(reasons))
                 
         if matched_jobs:
-            print(f"[MATCHING] Found {len(matched_jobs)} matching roles for {user_email} at {startup['startup_name']}. Checking duplicates...")
-            
+            # Deduplicate matched jobs in memory by job title (case-insensitive) to avoid duplicate alerts
+            unique_mj_by_title = {}
             for mj in matched_jobs:
+                title_key = mj['job_title'].lower().strip()
+                if title_key not in unique_mj_by_title:
+                    unique_mj_by_title[title_key] = mj
+            deduped_matched_jobs = list(unique_mj_by_title.values())
+
+            print(f"[MATCHING] Found {len(deduped_matched_jobs)} unique matching roles for {user_email} at {startup['startup_name']}. Checking database duplicates...")
+            
+            for mj in deduped_matched_jobs:
                 # Check duplicate notification in database
                 query = f"user_id=eq.{user_id}&startup_id=eq.{startup['id']}&job_title=eq.{urllib.parse.quote(mj['job_title'])}"
                 existing = make_supabase_request("GET", "fj_notifications", query_params=query)

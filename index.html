@@ -11,6 +11,161 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
+    <!-- E2E Test Dashboard Overlay -->
+    <div id="qa-test-dashboard" style="display: none;">
+        <!-- Sticky Top Banner -->
+        <div id="qa-banner-header">
+            <div class="qa-banner-left">
+                <span class="qa-spinner"></span>
+                <span class="qa-status-title">🤖 Automated QA E2E Test Active</span>
+                <span id="qa-current-step-badge">Step 1/9: Navigating...</span>
+            </div>
+            
+            <div class="qa-banner-center">
+                <div class="qa-progress-container">
+                    <span id="qa-progress-text">10% Complete</span>
+                    <div class="qa-progress-track">
+                        <div id="qa-progress-fill" style="width: 10%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="qa-banner-right">
+                <span id="qa-timer-text">Est. remaining: 3m 00s</span>
+                <button id="btn-qa-toggle-details" type="button">
+                    <span>Details</span>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Expandable Details Drawer -->
+        <div id="qa-details-drawer" class="collapsed">
+            <div class="qa-details-content">
+                <!-- Grid of Steps Checklist -->
+                <div class="qa-details-section">
+                    <h4>QA Steps Checklist</h4>
+                    <ul id="qa-steps-checklist" class="qa-steps-list">
+                        <li data-step="1" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">1.</span> Clean database & navigate to local server
+                        </li>
+                        <li data-step="2" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">2.</span> Onboarding Step 1: Initial Form
+                        </li>
+                        <li data-step="3" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">3.</span> Onboarding Step 2: Roles Chip Selection
+                        </li>
+                        <li data-step="4" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">4.</span> Onboarding Step 3: Locations Grid
+                        </li>
+                        <li data-step="5" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">5.</span> Onboarding Step 4: Preferences & Database Write
+                        </li>
+                        <li data-step="6" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">6.</span> Toggle Developer Mode & Verify debug layouts
+                        </li>
+                        <li data-step="7" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">7.</span> Trigger Real Test Email via Resend
+                        </li>
+                        <li data-step="8" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">8.</span> Verify DB Writes & Onboarding Persistence
+                        </li>
+                        <li data-step="9" class="pending">
+                            <span class="status-dot"></span>
+                            <span class="step-num">9.</span> Logout & Relogin Check
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Live Log Stream Console -->
+                <div class="qa-details-section">
+                    <h4>Real-time Test Logs</h4>
+                    <div id="qa-console-log" class="qa-logs-box">
+                        <div class="log-line system">[SYSTEM] Ready to begin automated test...</div>
+                    </div>
+                </div>
+
+                <!-- Snapshots & Screens Tested -->
+                <div class="qa-details-section">
+                    <h4>Validated Screens</h4>
+                    <div id="qa-screens-grid" class="qa-screens-grid">
+                        <div class="qa-screen-card" id="screen-card-auth">
+                            <div class="screen-status-indicator pending"></div>
+                            <span>Auth Screen</span>
+                        </div>
+                        <div class="qa-screen-card" id="screen-card-onboarding">
+                            <div class="screen-status-indicator pending"></div>
+                            <span>Onboarding Form</span>
+                        </div>
+                        <div class="qa-screen-card" id="screen-card-success">
+                            <div class="screen-status-indicator pending"></div>
+                            <span>Success screen</span>
+                        </div>
+                        <div class="qa-screen-card" id="screen-card-dashboard">
+                            <div class="screen-status-indicator pending"></div>
+                            <span>Dashboard view</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Status Badge -->
+    <div id="qa-floating-badge" style="display: none;">
+        <span class="qa-badge-dot running"></span>
+        <span id="qa-badge-text">Test Active: 10%</span>
+    </div>
+
+    <!-- Completion Modal -->
+    <div id="qa-completion-modal" style="display: none;">
+        <div class="qa-modal-card">
+            <div class="qa-modal-header">
+                <div class="qa-modal-icon" id="qa-modal-icon-container">
+                    <!-- Dynamic checkmark or warning cross -->
+                </div>
+                <h2 id="qa-modal-title">E2E Test Run Completed!</h2>
+            </div>
+            
+            <div class="qa-modal-body">
+                <div class="qa-stat-row">
+                    <div class="qa-stat-col">
+                        <span class="qa-stat-label">Duration</span>
+                        <span id="qa-stat-duration" class="qa-stat-val">0.0s</span>
+                    </div>
+                    <div class="qa-stat-col">
+                        <span class="qa-stat-label">Status</span>
+                        <span id="qa-stat-status" class="qa-stat-val success">Passed</span>
+                    </div>
+                    <div class="qa-stat-col">
+                        <span class="qa-stat-label">Screens tested</span>
+                        <span id="qa-stat-screens" class="qa-stat-val">4 / 4</span>
+                    </div>
+                </div>
+                
+                <div class="qa-modal-issues-section" id="qa-modal-issues-container" style="display: none;">
+                    <h4>Issues Found:</h4>
+                    <ul id="qa-modal-issues-list">
+                        <!-- Dynamic issues list -->
+                    </ul>
+                </div>
+
+                <div class="qa-modal-footer">
+                    <p id="qa-closing-countdown">Returning to Antigravity chat window in 10s...</p>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Main Outer Wrapper -->
     <div id="app-container">
         <!-- Auth Layout Section -->
@@ -577,6 +732,7 @@
                         <span>FundedJobs AI</span>
                     </div>
                     <span class="sidebar-subtitle">Funded Startup Jobs</span>
+                    <span id="dev-mode-badge" style="display: none; font-size: 0.7rem; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 2px 6px; border-radius: 4px; font-weight: bold; width: fit-content; margin-top: 5px;">Dev Mode Active</span>
                 </div>
 
                 <nav class="sidebar-nav">
@@ -741,7 +897,7 @@
                     </div>
 
                     <!-- Debug / Admin Status Panel -->
-                    <div class="section-container" id="debug-status-panel" style="margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px;">
+                    <div class="section-container" id="debug-status-panel" style="margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; display: none;">
                         <h3 style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 15px;">MVP Testing Status Panel</h3>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px;">
                             <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
@@ -768,7 +924,7 @@
                     </div>
 
                     <!-- Matching Engine Live Debug Mode -->
-                    <div class="section-container" id="matching-debug-section" style="margin-top: 30px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px;">
+                    <div class="section-container" id="matching-debug-section" style="margin-top: 30px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px; display: none;">
                         <h3 style="color: #10b981; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
                             <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
                             Matching Engine Live Debug Mode

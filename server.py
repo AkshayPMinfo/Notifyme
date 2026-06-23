@@ -5,7 +5,11 @@ import os
 import json
 import urllib.request
 import urllib.parse
+import urllib.error
 import ssl
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from datetime import datetime
 
 # Simple .env loader
@@ -25,7 +29,7 @@ load_dotenv()
 PORT = 8080
 SUPABASE_URL = "https://vpmngcagfxyqvemdgzav.supabase.co"
 SUPABASE_ANON_KEY = "sb_publishable_YG5n4OWJxPLrkWN61rMXoA_LNUdE8IJ"
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", SUPABASE_ANON_KEY)
+SUPABASE_KEY = os.environ.get("SUPABASE_SECRET_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or SUPABASE_ANON_KEY
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "onboarding@resend.dev")
 
@@ -56,6 +60,30 @@ def make_supabase_request(method, table, data=None, query_params=""):
         return None
 
 def send_email(to_email, subject, html_content):
+    smtp_user = os.environ.get("SMTP_USER")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+    
+    if smtp_user and smtp_password:
+        host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+        port = int(os.environ.get("SMTP_PORT", "587"))
+        print(f"[EMAIL] Sending via SMTP ({host}:{port}) to: {to_email}")
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = smtp_user
+            msg['To'] = to_email
+            msg.attach(MIMEText(html_content, 'html'))
+            
+            server = smtplib.SMTP(host, port)
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, to_email, msg.as_string())
+            server.quit()
+            return True, "sent_smtp"
+        except Exception as e:
+            print(f"[ERROR] SMTP sending failed: {e}")
+            return False, json.dumps({"error": str(e)})
+
     if not RESEND_API_KEY:
         print("[EMAIL] Simulated (No Resend Key):", to_email)
         return True, "simulated"
@@ -75,14 +103,66 @@ def send_email(to_email, subject, html_content):
     req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, context=SSL_CONTEXT) as res:
-            return True, "sent"
+            res_body = res.read().decode("utf-8")
+            return True, res_body
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8")
+        print(f"[ERROR] Resend API failed: HTTP {e.code} - {err_body}")
+        return False, err_body
     except Exception as e:
         print(f"[ERROR] Resend API failed: {e}")
-        return False, str(e)
+        return False, json.dumps({"error": str(e)})
 
 class APIRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
-        if self.path == "/api/send-test-email":
+        if self.path == "/api/test-email":
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length).decode('utf-8')
+            
+            try:
+                data = json.loads(post_data)
+                to_email = data.get("to_email")
+                
+                if not to_email:
+                    self.send_response(400)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"success": False, "error": "Missing to_email"}).encode('utf-8'))
+                    return
+                
+                print(f"[TEST EMAIL] Request received for recipient: {to_email}")
+                subject = "Resend Diagnostic Endpoint Test"
+                html_content = """
+                <html>
+                    <body>
+                        <h2>Resend Diagnostic Test</h2>
+                        <p>This is a diagnostic email sent from the <code>/api/test-email</code> endpoint.</p>
+                        <p>If you received this, your Resend API connection is fully working.</p>
+                    </body>
+                </html>
+                """
+                
+                success, response_body = send_email(to_email, subject, html_content)
+                
+                try:
+                    res_json = json.loads(response_body)
+                except Exception:
+                    res_json = {"raw_response": response_body}
+                
+                self.send_response(200 if success else 403)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": success,
+                    "resend_response": res_json
+                }).encode('utf-8'))
+                
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode('utf-8'))
+        elif self.path == "/api/send-test-email":
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length).decode('utf-8')
             
@@ -162,10 +242,15 @@ class APIRequestHandler(http.server.SimpleHTTPRequestHandler):
                 }
                 make_supabase_request("POST", "fj_notifications", data=notification_record)
                 
-                self.send_response(200)
+                try:
+                    status_json = json.loads(status)
+                except Exception:
+                    status_json = {"raw": status}
+
+                self.send_response(200 if success else 400)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
-                self.wfile.write(json.dumps({"success": True, "status": status}).encode('utf-8'))
+                self.wfile.write(json.dumps({"success": success, "status": status_json}).encode('utf-8'))
                 
             except Exception as e:
                 self.send_response(500)
@@ -176,6 +261,14 @@ class APIRequestHandler(http.server.SimpleHTTPRequestHandler):
             super().do_POST()
 
 if __name__ == "__main__":
+    # Startup Diagnostics for Resend
+    if RESEND_API_KEY:
+        masked_key = RESEND_API_KEY[:6] + "..." + RESEND_API_KEY[-3:] if len(RESEND_API_KEY) > 9 else "..."
+        print(f"[STARTUP] RESEND_API_KEY is present (Masked: {masked_key}, Length: {len(RESEND_API_KEY)})")
+    else:
+        print("[STARTUP] WARNING: RESEND_API_KEY is not defined!")
+    print(f"[STARTUP] RESEND_FROM_EMAIL is set to: {RESEND_FROM_EMAIL}")
+
     print(f"Starting API Server on http://localhost:{PORT}...")
     # Allow address reuse to prevent bind errors on quick restarts
     socketserver.TCPServer.allow_reuse_address = True
