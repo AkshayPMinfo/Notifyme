@@ -1,6 +1,8 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" }
+    { "source": "/api/cron-discovery", "destination": "/api/index" },
+    { "source": "/api/send-test-email", "destination": "/api/index" },
+    { "source": "/api/test-email", "destination": "/api/index" }
   ],
   "crons": [
     {
