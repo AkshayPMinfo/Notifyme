@@ -2807,5 +2807,189 @@ body::after {
 }
 
 
+/* ====================================================
+   NOTIFICATION PANEL
+   ==================================================== */
+.notification-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: -8px;
+    width: 360px;
+    background: rgba(15, 15, 25, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    overflow: hidden;
+    animation: fadeSlideDown 0.18s ease;
+}
+
+@keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.notif-panel-header {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.notif-panel-header h3 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.notif-panel-body {
+    max-height: 460px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    cursor: pointer;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.15s ease;
+}
+
+.notif-item:hover {
+    background: rgba(59, 130, 246, 0.07);
+}
+
+.notif-item:last-child { border-bottom: none; }
+
+.notif-item-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.notif-item-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.notif-item-text { flex: 1; min-width: 0; }
+
+.notif-item-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notif-item-meta { display: flex; align-items: center; margin-bottom: 3px; }
+
+.notif-item-date {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 3px;
+}
+
+.notif-empty {
+    padding: 28px 18px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ====================================================
+   EMAIL HISTORY PAGE
+   ==================================================== */
+.email-history-header-row,
+.email-history-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.email-history-header-row {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.02);
+    position: sticky;
+    top: 0;
+}
+
+.email-history-row {
+    transition: background 0.15s ease;
+}
+
+.email-history-row:hover { background: rgba(59, 130, 246, 0.05); }
+.email-history-row:last-child { border-bottom: none; }
+
+.eh-col { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 8px; }
+.eh-col-name  { flex: 2; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; font-weight: 500; color: #fff; }
+.eh-col-amount { flex: 1; }
+.eh-col-stage  { flex: 1; }
+.eh-col-date   { flex: 1.2; }
+.eh-col-status { flex: 0.9; }
+
+.eh-startup-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.eh-status-delivered {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 20px;
+    padding: 3px 9px;
+    white-space: nowrap;
+}
+
+.eh-status-failed {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 20px;
+    padding: 3px 9px;
+    white-space: nowrap;
+}
+
+/* ====================================================
+   PROFILE EDIT FORM — role chips inside profile pane
+   ==================================================== */
+.roles-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
 
 

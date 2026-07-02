@@ -390,20 +390,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Update Profile Pane
-        const profileFirstName = document.getElementById('profile-first-name');
-        const profileJobTitle = document.getElementById('profile-job-title');
-        const profileExp = document.getElementById('profile-experience-level');
-        const profileRoles = document.getElementById('profile-preferred-roles');
-        const profileLocs = document.getElementById('profile-preferred-locations');
+        // Update Profile Pane (now an editable form)
+        const profileEmail = document.getElementById('profile-user-email');
+        const profileEditFirstName = document.getElementById('profile-edit-first-name');
+        const profileEditTitle = document.getElementById('profile-edit-title');
+        const profileEditTitleOther = document.getElementById('profile-edit-title-other');
+        const profileTitleOtherGroup = document.getElementById('profile-title-other-group');
+        const profileEditExp = document.getElementById('profile-edit-exp');
+        const profileEditLocations = document.getElementById('profile-edit-locations');
 
-        if (profileFirstName) profileFirstName.innerText = storedFirstName || 'Not Specified';
-        if (profileJobTitle) profileJobTitle.innerText = storedTitle || 'Not Specified';
-        if (profileExp) profileExp.innerText = formattedExp;
-        if (profileRoles) profileRoles.innerText = storedRoles.length > 0 ? storedRoles.join(', ') : 'None';
-        if (profileLocs) profileLocs.innerText = storedLocs.length > 0 ? storedLocs.join(', ') : 'None';
+        if (profileEditFirstName) profileEditFirstName.value = storedFirstName;
+        if (profileEditExp) profileEditExp.value = storedExp;
+        if (profileEditLocations) profileEditLocations.value = storedLocs.join(', ');
 
-        // Update Edit Form Inputs
+        // Populate Job Title dropdown — handle 'Other' case
+        if (profileEditTitle) {
+            const titleOptions = Array.from(profileEditTitle.options).map(o => o.value);
+            if (storedTitle && titleOptions.includes(storedTitle)) {
+                profileEditTitle.value = storedTitle;
+                if (profileTitleOtherGroup) profileTitleOtherGroup.style.display = 'none';
+                if (profileEditTitleOther) profileEditTitleOther.value = '';
+            } else if (storedTitle) {
+                profileEditTitle.value = 'Other';
+                if (profileTitleOtherGroup) profileTitleOtherGroup.style.display = 'block';
+                if (profileEditTitleOther) profileEditTitleOther.value = storedTitle;
+            }
+        }
+
+        // Sync role chips on profile page
+        const profileRoleChips = document.querySelectorAll('#profile-roles-chips .chip-btn');
+        profileRoleChips.forEach(chip => {
+            if (storedRoles.includes(chip.getAttribute('data-value'))) {
+                chip.classList.add('selected');
+            } else {
+                chip.classList.remove('selected');
+            }
+        });
+
+        // Update Edit Form Inputs (legacy preferences form — kept for safety, no-op if elements absent)
         const editFirstName = document.getElementById('edit-first-name');
         const editJobTitle = document.getElementById('edit-job-title');
         const editExp = document.getElementById('edit-experience');
@@ -500,12 +524,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const prefEmailAlerts = localStorage.getItem('pref_email_alerts') || 'false';
 
         // Elements
-        const statsMatchesVal = document.getElementById('stats-startup-matches');
-        const statsMatchesSub = document.getElementById('stats-startup-matches-subtext');
-        const statsRolesVal = document.getElementById('stats-open-roles');
-        const statsRolesSub = document.getElementById('stats-open-roles-subtext');
-        const statsAlertsVal = document.getElementById('stats-email-alerts-count');
-        const statsAlertsSub = document.getElementById('stats-email-alerts-subtext');
+        // Stats card 1: recently funded startups count
+        const statsStartupMatches = document.getElementById('stats-startup-matches');
+        const statsStartupMatchesSubtext = document.getElementById('stats-startup-matches-subtext');
+        if (statsStartupMatches) statsStartupMatches.innerText = matchedStartups.length;
+        if (statsStartupMatchesSubtext) statsStartupMatchesSubtext.innerText = matchedStartups.length === 1 ? '1 funded startup found.' : `${matchedStartups.length} funded startups found.`;
+
+        // Stats card 2: total startups in DB
+        const statsOpenRoles = document.getElementById('stats-open-roles');
+        const statsOpenRolesSubtext = document.getElementById('stats-open-roles-subtext');
+        if (statsOpenRoles) statsOpenRoles.innerText = startups.length;
+        if (statsOpenRolesSubtext) statsOpenRolesSubtext.innerText = startups.length === 1 ? '1 startup discovered.' : `${startups.length} startups in database.`;
+
+        // Stats card 3: emails sent
+        const statsEmailCount = document.getElementById('stats-email-alerts-count');
+        const statsEmailSubtext = document.getElementById('stats-email-alerts-subtext');
+        if (statsEmailCount) statsEmailCount.innerText = emailLogs.length;
+        if (statsEmailSubtext) statsEmailSubtext.innerText = emailLogs.length === 0 ? 'No alerts sent yet.' : `${emailLogs.length} alert${emailLogs.length !== 1 ? 's' : ''} sent to you.`;
 
         const startupsGrid = document.querySelector('.startup-cards-grid');
         const alertsList = document.querySelector('.email-alerts-list');
@@ -692,9 +727,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const welcomeSubtitle = document.querySelector('.welcome-section .welcome-subtitle');
         if (welcomeSubtitle) {
             if (matchedStartups.length > 0) {
-                welcomeSubtitle.innerText = `Discover recently funded startups hiring for your preferred roles. You have ${matchedStartups.length} matching startup${matchedStartups.length !== 1 ? 's' : ''}.`;
+                welcomeSubtitle.innerText = `Discover recently funded startups and get instant email alerts. ${matchedStartups.length} startup${matchedStartups.length !== 1 ? 's' : ''} in the database.`;
             } else {
-                welcomeSubtitle.innerText = 'Discover recently funded startups hiring for your preferred roles.';
+                welcomeSubtitle.innerText = 'Discover recently funded startups and get instant email alerts.';
             }
         }
 
@@ -902,12 +937,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="startup-card-footer">
                             <div class="footer-left">
-                                <div class="avatar-group">
-                                    ${avatarHtml}
-                                </div>
-                                <span class="footer-meta">${startupJobs.length} matching role${startupJobs.length > 1 ? 's' : ''}</span>
+                                <span class="footer-meta" style="color: rgba(255,255,255,0.45); font-size: 0.78rem;">${startup.funding_date ? `Funded: ${startup.funding_date}` : startup.funding_stage}</span>
                             </div>
-                            <button type="button" class="view-roles-btn" data-startup-id="${startup.id}">View Funding Details</button>
+                            <button type="button" class="view-roles-btn" data-startup-id="${startup.id}">View Details</button>
                         </div>
                     `;
                     startupsGrid.appendChild(card);
@@ -1859,39 +1891,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateActivePage('onboarding-step-4');
             } else if (activePage === 'onboarding-step-4') {
                 await savePreferences();
-                // Aha-moment: send one welcome email to brand-new users on first onboarding completion
-                // Guard: only fire if this key has never been set (i.e. truly first-time completion)
-                const ahaAlreadySent = localStorage.getItem('aha_welcome_sent') === 'true';
-                if (!ahaAlreadySent) {
-                    try {
-                        let ahaMail = localStorage.getItem('user_email') || '';
-                        let ahaUserId = '00000000-0000-0000-0000-000000000000';
-                        let ahaName = localStorage.getItem('pref_first_name') || 'there';
-                        if (supabase) {
-                            const { data: { user: ahaUser } } = await supabase.auth.getUser();
-                            if (ahaUser) {
-                                ahaMail = ahaUser.email;
-                                ahaUserId = ahaUser.id;
+                // Aha-moment: send one welcome email on first onboarding completion
+                // Guard: check fj_profiles.welcome_email_sent in Supabase (not localStorage)
+                try {
+                    let ahaMail = localStorage.getItem('user_email') || '';
+                    let ahaUserId = null;
+                    let ahaName = localStorage.getItem('pref_first_name') || 'there';
+                    if (supabase) {
+                        const { data: { user: ahaUser } } = await supabase.auth.getUser();
+                        if (ahaUser) {
+                            ahaMail = ahaUser.email;
+                            ahaUserId = ahaUser.id;
+                            // Check welcome_email_sent in fj_profiles
+                            const { data: ahaProfile } = await supabase
+                                .from('fj_profiles')
+                                .select('welcome_email_sent')
+                                .eq('id', ahaUser.id)
+                                .maybeSingle();
+                            const alreadySent = ahaProfile && ahaProfile.welcome_email_sent === true;
+                            if (!alreadySent && ahaMail && ahaMail !== 'guest@fundedjobs.ai') {
+                                console.log('[AHA] Sending first-time welcome email to', ahaMail);
+                                const ahaRes = await fetch('/api/send-test-email', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ email: ahaMail, user_id: ahaUserId, first_name: ahaName })
+                                });
+                                const ahaData = await ahaRes.json();
+                                if (ahaData.success) {
+                                    // Persist in Supabase so it never fires again on any device
+                                    await supabase
+                                        .from('fj_profiles')
+                                        .update({ welcome_email_sent: true })
+                                        .eq('id', ahaUser.id);
+                                    console.log('[AHA] Welcome email sent and recorded in Supabase.');
+                                } else {
+                                    console.warn('[AHA] Welcome email send failed:', ahaData);
+                                }
+                            } else if (alreadySent) {
+                                console.log('[AHA] Welcome email already sent. Skipping.');
                             }
                         }
-                        if (ahaMail && ahaMail !== 'guest@fundedjobs.ai') {
-                            console.log('[AHA] Sending first-time welcome email to', ahaMail);
-                            const ahaRes = await fetch('/api/send-test-email', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ email: ahaMail, user_id: ahaUserId, first_name: ahaName })
-                            });
-                            const ahaData = await ahaRes.json();
-                            if (ahaData.success) {
-                                localStorage.setItem('aha_welcome_sent', 'true');
-                                console.log('[AHA] Welcome email sent successfully.');
-                            } else {
-                                console.warn('[AHA] Welcome email send failed:', ahaData);
-                            }
-                        }
-                    } catch (ahaErr) {
-                        console.warn('[AHA] Welcome email error (non-blocking):', ahaErr);
                     }
+                } catch (ahaErr) {
+                    console.warn('[AHA] Welcome email error (non-blocking):', ahaErr);
                 }
                 updateActivePage('onboarding-success');
             }
@@ -2065,6 +2107,358 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // -----------------------------------------------------------------------
+    // PROFILE EDIT FORM — replaces old preferences-edit-form
+    // -----------------------------------------------------------------------
+    function setupProfileEditForm() {
+        const profileEditForm = document.getElementById('profile-edit-form');
+        if (!profileEditForm) return;
+
+        // Job Title dropdown: show/hide "Other" custom input
+        const profileEditTitle = document.getElementById('profile-edit-title');
+        const profileTitleOtherGroup = document.getElementById('profile-title-other-group');
+        if (profileEditTitle && profileTitleOtherGroup) {
+            profileEditTitle.addEventListener('change', () => {
+                profileTitleOtherGroup.style.display = profileEditTitle.value === 'Other' ? 'block' : 'none';
+            });
+        }
+
+        // Preferred Roles chip selection (up to 5)
+        const profileRoleChips = document.querySelectorAll('#profile-roles-chips .chip-btn');
+        profileRoleChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const isSelected = chip.classList.contains('selected');
+                const currentSelected = document.querySelectorAll('#profile-roles-chips .chip-btn.selected');
+                if (!isSelected && currentSelected.length >= 5) return; // max 5
+                chip.classList.toggle('selected');
+            });
+        });
+
+        // Form submit
+        profileEditForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const profileEditFirstName = document.getElementById('profile-edit-first-name');
+            const profileEditTitleSel = document.getElementById('profile-edit-title');
+            const profileEditTitleOther = document.getElementById('profile-edit-title-other');
+            const profileEditExp = document.getElementById('profile-edit-exp');
+            const profileEditLocations = document.getElementById('profile-edit-locations');
+
+            const newFirstName = profileEditFirstName ? profileEditFirstName.value.trim() : '';
+            let newTitle = profileEditTitleSel ? profileEditTitleSel.value : '';
+            if (newTitle === 'Other' && profileEditTitleOther) {
+                newTitle = profileEditTitleOther.value.trim() || 'Other';
+            }
+            const newExp = profileEditExp ? profileEditExp.value : '0-1';
+            const rawLocs = profileEditLocations ? profileEditLocations.value : '';
+            const newLocs = rawLocs.split(',').map(l => l.trim()).filter(l => l.length > 0);
+
+            // Collect selected role chips
+            const selectedChips = document.querySelectorAll('#profile-roles-chips .chip-btn.selected');
+            const newRoles = Array.from(selectedChips).map(c => c.getAttribute('data-value'));
+
+            if (newFirstName.length < 1) {
+                alert('First Name is required.');
+                return;
+            }
+
+            localStorage.setItem('pref_first_name', newFirstName);
+            localStorage.setItem('pref_job_title', newTitle);
+            localStorage.setItem('pref_experience', newExp);
+            localStorage.setItem('pref_roles', JSON.stringify(newRoles));
+            localStorage.setItem('pref_locations', JSON.stringify(newLocs));
+
+            if (supabase) {
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const { error: profileErr } = await supabase
+                            .from('fj_profiles')
+                            .upsert({
+                                id: user.id,
+                                first_name: newFirstName,
+                                email: user.email,
+                                job_title: newTitle,
+                                experience: newExp
+                            });
+                        if (profileErr) console.error('[Profile] Profile update error:', profileErr);
+
+                        const { error: prefErr } = await supabase
+                            .from('fj_preferences')
+                            .upsert({
+                                user_id: user.id,
+                                preferred_roles: newRoles,
+                                preferred_locations: newLocs,
+                                startup_stages: localStorage.getItem('pref_startup_stage') || '',
+                                email_alerts: localStorage.getItem('pref_email_alerts') === 'true'
+                            }, { onConflict: 'user_id' });
+                        if (prefErr) console.error('[Profile] Preferences update error:', prefErr);
+                    }
+                } catch (err) {
+                    console.error('[Profile] Supabase update error:', err);
+                }
+            }
+
+            syncPreferencesToFormAndProfile();
+            await loadDashboardData();
+            showToast('Profile updated successfully!');
+        });
+    }
+    setupProfileEditForm();
+
+    // -----------------------------------------------------------------------
+    // NOTIFICATION PANEL — fresh Supabase data, no localStorage
+    // -----------------------------------------------------------------------
+    async function loadNotifications() {
+        const panelBody = document.getElementById('notif-panel-body');
+        if (!panelBody) return;
+        panelBody.innerHTML = '<div class="notif-empty">Loading...</div>';
+
+        if (!supabase) {
+            panelBody.innerHTML = '<div class="notif-empty">Not available offline.</div>';
+            return;
+        }
+
+        try {
+            const { data: startups, error } = await supabase
+                .from('fj_funded_startups')
+                .select('id, startup_name, funding_amount, funding_stage, funding_date')
+                .order('funding_date', { ascending: false })
+                .limit(20);
+
+            if (error || !startups || startups.length === 0) {
+                panelBody.innerHTML = '<div class="notif-empty">No funded startups discovered yet.</div>';
+                return;
+            }
+
+            panelBody.innerHTML = '';
+            startups.forEach(s => {
+                const item = document.createElement('div');
+                item.className = 'notif-item';
+                const relativeDate = s.funding_date ? timeAgo(s.funding_date) : '';
+                item.innerHTML = `
+                    <div class="notif-item-body">
+                        <div class="notif-item-logo">${(s.startup_name || '?').substring(0, 2).toUpperCase()}</div>
+                        <div class="notif-item-text">
+                            <div class="notif-item-name">${s.startup_name}</div>
+                            <div class="notif-item-meta">
+                                <span class="startup-stage-badge" style="font-size:0.7rem; padding: 2px 6px;">${s.funding_stage}</span>
+                                <span style="color: rgba(255,255,255,0.5); font-size: 0.78rem; margin-left: 6px;">${s.funding_amount || ''}</span>
+                            </div>
+                            <div class="notif-item-date">${relativeDate}</div>
+                        </div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    const notifPanel = document.getElementById('notification-panel');
+                    if (notifPanel) notifPanel.style.display = 'none';
+                    openRolesModalForStartup(s.id);
+                });
+                panelBody.appendChild(item);
+            });
+        } catch (err) {
+            console.error('[Notifications] Error:', err);
+            panelBody.innerHTML = '<div class="notif-empty">Failed to load notifications.</div>';
+        }
+    }
+
+    // Bell button toggle
+    const bellBtn = document.getElementById('notification-bell-btn');
+    const notifPanel = document.getElementById('notification-panel');
+    const notifBadgeDot = document.getElementById('notif-badge-dot');
+
+    if (bellBtn && notifPanel) {
+        bellBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = notifPanel.style.display !== 'none';
+            notifPanel.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) {
+                // Hide unread dot when panel is opened
+                if (notifBadgeDot) notifBadgeDot.style.display = 'none';
+                loadNotifications();
+            }
+        });
+
+        // Close panel on outside click
+        document.addEventListener('click', (e) => {
+            if (!bellBtn.contains(e.target) && !notifPanel.contains(e.target)) {
+                notifPanel.style.display = 'none';
+            }
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // EMAIL HISTORY — load from fj_notifications
+    // -----------------------------------------------------------------------
+    async function loadEmailHistory() {
+        const historyList = document.getElementById('email-history-list');
+        const historyCount = document.getElementById('email-history-count');
+        const sendAgainBtn = document.getElementById('btn-send-mail-again');
+        if (!historyList) return;
+
+        historyList.innerHTML = '<div class="notif-empty" style="padding: 40px 20px; text-align: center; color: rgba(255,255,255,0.4);">Loading email history...</div>';
+        if (historyCount) historyCount.innerText = 'Loading...';
+
+        if (!supabase) {
+            historyList.innerHTML = '<div class="notif-empty" style="padding: 40px 20px; text-align: center;">Not available offline.</div>';
+            return;
+        }
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                historyList.innerHTML = '<div class="notif-empty" style="padding: 40px 20px; text-align: center;">Please log in to view email history.</div>';
+                return;
+            }
+
+            // Fetch notification logs for this user
+            const { data: logs, error: logsErr } = await supabase
+                .from('fj_notifications')
+                .select('id, startup_id, job_title, email_sent, sent_at')
+                .eq('user_id', user.id)
+                .order('sent_at', { ascending: false });
+
+            if (logsErr) throw logsErr;
+
+            if (!logs || logs.length === 0) {
+                if (historyCount) historyCount.innerText = '0 emails sent';
+                historyList.innerHTML = `
+                    <div style="padding: 48px 20px; text-align: center;">
+                        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.25; display:block; margin: 0 auto 14px auto;">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        <p style="color: rgba(255,255,255,0.35); font-size: 0.9rem;">No emails have been sent to you yet.</p>
+                    </div>`;
+                return;
+            }
+
+            // Fetch all relevant startups
+            const startupIds = [...new Set(logs.filter(l => l.startup_id).map(l => l.startup_id))];
+            let startupsMap = {};
+            if (startupIds.length > 0) {
+                const { data: startups } = await supabase
+                    .from('fj_funded_startups')
+                    .select('id, startup_name, funding_amount, funding_stage, funding_date')
+                    .in('id', startupIds);
+                if (startups) startups.forEach(s => { startupsMap[s.id] = s; });
+            }
+
+            if (historyCount) historyCount.innerText = `${logs.length} email${logs.length !== 1 ? 's' : ''} sent`;
+
+            historyList.innerHTML = '';
+
+            // Header row
+            const headerRow = document.createElement('div');
+            headerRow.className = 'email-history-header-row';
+            headerRow.innerHTML = `
+                <div style="width: 28px;"></div>
+                <div class="eh-col eh-col-name">Startup</div>
+                <div class="eh-col eh-col-amount">Amount</div>
+                <div class="eh-col eh-col-stage">Stage</div>
+                <div class="eh-col eh-col-date">Date Sent</div>
+                <div class="eh-col eh-col-status">Status</div>
+            `;
+            historyList.appendChild(headerRow);
+
+            logs.forEach((log, idx) => {
+                const startup = startupsMap[log.startup_id] || {};
+                const startupName = startup.startup_name || 'Unknown Startup';
+                const amount = startup.funding_amount || '—';
+                const stage = startup.funding_stage || '—';
+                const dateStr = log.sent_at ? new Date(log.sent_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+                const statusClass = log.email_sent ? 'eh-status-delivered' : 'eh-status-failed';
+                const statusLabel = log.email_sent ? 'Delivered' : 'Failed';
+
+                const row = document.createElement('div');
+                row.className = 'email-history-row';
+                row.dataset.startupId = log.startup_id || '';
+                row.dataset.logId = log.id;
+                row.innerHTML = `
+                    <div style="width: 28px; display: flex; align-items: center; justify-content: center;">
+                        <input type="checkbox" class="eh-checkbox" data-startup-id="${log.startup_id || ''}" style="width: 16px; height: 16px; cursor: pointer; accent-color: #3b82f6;">
+                    </div>
+                    <div class="eh-col eh-col-name">
+                        <span class="eh-startup-logo">${(startupName).substring(0, 2).toUpperCase()}</span>
+                        <span>${startupName}</span>
+                    </div>
+                    <div class="eh-col eh-col-amount" style="color: rgba(255,255,255,0.7); font-size: 0.85rem;">${amount}</div>
+                    <div class="eh-col eh-col-stage"><span class="startup-stage-badge" style="font-size: 0.72rem;">${stage}</span></div>
+                    <div class="eh-col eh-col-date" style="color: rgba(255,255,255,0.55); font-size: 0.82rem;">${dateStr}</div>
+                    <div class="eh-col eh-col-status"><span class="${statusClass}">${statusLabel}</span></div>
+                `;
+                historyList.appendChild(row);
+            });
+
+            // Checkbox logic — enable/disable Send Mail Again button
+            const checkboxes = historyList.querySelectorAll('.eh-checkbox');
+            function updateSendAgainBtn() {
+                const anyChecked = Array.from(checkboxes).some(c => c.checked && c.dataset.startupId);
+                if (sendAgainBtn) {
+                    sendAgainBtn.disabled = !anyChecked;
+                    sendAgainBtn.style.opacity = anyChecked ? '1' : '0.5';
+                    sendAgainBtn.style.cursor = anyChecked ? 'pointer' : 'not-allowed';
+                }
+            }
+            checkboxes.forEach(c => c.addEventListener('change', updateSendAgainBtn));
+
+        } catch (err) {
+            console.error('[EmailHistory] Error:', err);
+            historyList.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: rgba(255,255,255,0.4);">Failed to load email history.</div>';
+        }
+    }
+
+    // Send Mail Again button handler
+    const btnSendMailAgain = document.getElementById('btn-send-mail-again');
+    if (btnSendMailAgain) {
+        btnSendMailAgain.addEventListener('click', async () => {
+            const checkboxes = document.querySelectorAll('#email-history-list .eh-checkbox:checked');
+            if (checkboxes.length === 0) return;
+
+            let userEmail = localStorage.getItem('user_email') || '';
+            let userId = null;
+            let firstName = localStorage.getItem('pref_first_name') || 'there';
+
+            if (supabase) {
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) { userEmail = user.email; userId = user.id; }
+                } catch (e) {}
+            }
+            if (!userId) userId = '00000000-0000-0000-0000-000000000000';
+
+            btnSendMailAgain.disabled = true;
+            btnSendMailAgain.innerText = 'Sending...';
+
+            let successCount = 0;
+            const startupIds = [...new Set(Array.from(checkboxes).map(c => c.dataset.startupId).filter(Boolean))];
+
+            for (const startupId of startupIds) {
+                try {
+                    const res = await fetch('/api/send-test-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail, user_id: userId, first_name: firstName, startup_id: startupId })
+                    });
+                    const data = await res.json();
+                    if (data.success) successCount++;
+                } catch (err) {
+                    console.error('[SendMailAgain] Error for startup', startupId, err);
+                }
+            }
+
+            btnSendMailAgain.disabled = false;
+            btnSendMailAgain.innerText = 'Send Mail Again';
+            btnSendMailAgain.style.opacity = '0.5';
+            btnSendMailAgain.style.cursor = 'not-allowed';
+
+            showToast(successCount > 0 ? `${successCount} email${successCount !== 1 ? 's' : ''} sent successfully!` : 'No emails were sent.');
+            // Uncheck all and reload
+            document.querySelectorAll('#email-history-list .eh-checkbox').forEach(c => c.checked = false);
+            await loadEmailHistory();
+        });
+    }
+
     // Logout Action
     async function handleLogout() {
         if (confirm('Are you sure you want to logout?')) {
@@ -2150,6 +2544,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalStartupLocation) modalStartupLocation.innerText = startup.location;
         if (modalStartupDesc) modalStartupDesc.innerText = startup.description || 'No description available.';
         if (modalFundingDate) modalFundingDate.innerText = startup.funding_date || 'N/A';
+
+        // Populate new funding detail spans
+        const modalFundingStageDetail = document.getElementById('modal-funding-stage-detail');
+        const modalFundingAmountDetail = document.getElementById('modal-funding-amount-detail');
+        if (modalFundingStageDetail) modalFundingStageDetail.innerText = startup.funding_stage || 'N/A';
+        if (modalFundingAmountDetail) modalFundingAmountDetail.innerText = startup.funding_amount || 'N/A';
 
         // Set website link CTA
         if (modalLinkWebsite) {
