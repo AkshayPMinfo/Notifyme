@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const authTitle = document.getElementById('auth-title');
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
-    const btnGuest = document.getElementById('btn-guest-mode');
+
 
     // DOM Elements - Onboarding Screen
     const authScreen = document.getElementById('auth-screen');
@@ -1423,22 +1423,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Guest Mode entry trigger
-    if (btnGuest) {
-        btnGuest.addEventListener('click', async (e) => {
-            e.preventDefault();
-            console.log('Continue as Guest clicked');
-            
-            if (supabase) {
-                await supabase.auth.signOut();
-            }
-            
-            localStorage.setItem('user_email', 'guest@fundedjobs.ai');
-            const profileEmail = document.getElementById('profile-user-email');
-            if (profileEmail) profileEmail.innerText = 'guest@fundedjobs.ai';
-            await handleAuthSuccess();
-        });
-    }
 
     // Forgot Password entry trigger
     const forgotPasswordLink = document.getElementById('forgot-password');
