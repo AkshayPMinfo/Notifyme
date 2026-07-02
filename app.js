@@ -1461,7 +1461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 isRoleOtherValid = (otherRoleVal.length >= 2 && otherRoleVal.length <= 100);
             }
 
-            isValid = (selectedRolesCount >= 1 && selectedRolesCount <= 3 && isRoleOtherValid);
+            isValid = (selectedRolesCount >= 1 && selectedRolesCount <= 5 && isRoleOtherValid);
         } else if (stepNum === 3) {
             const selectedLocsCount = document.querySelectorAll('#locations-grid-wrapper .location-option-card.selected:not(.more-loc-card)').length;
             const selectedDropdownCount = document.querySelectorAll('#cities-checklist-wrapper input[type="checkbox"]:checked:not([data-city="Other"])').length;
@@ -1523,14 +1523,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (onboardRoleOther) onboardRoleOther.value = '';
                 }
             } else {
-                // Maximum 3 roles rule check
-                if (currentlySelectedCount < 3) {
+                // Maximum 5 roles rule check
+                if (currentlySelectedCount < 5) {
                     chip.classList.add('selected');
                     if (chip.getAttribute('data-value') === 'Other') {
                         if (onboardRoleOtherGroup) onboardRoleOtherGroup.style.display = 'block';
                     }
                 } else {
-                    console.log('Maximum 3 role selections allowed.');
+                    console.log('Maximum 5 role selections allowed.');
                 }
             }
             validateStep(2);
@@ -1859,6 +1859,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateActivePage('onboarding-step-4');
             } else if (activePage === 'onboarding-step-4') {
                 await savePreferences();
+                // Aha-moment: send one welcome email to brand-new users on first onboarding completion
+                // Guard: only fire if this key has never been set (i.e. truly first-time completion)
+                const ahaAlreadySent = localStorage.getItem('aha_welcome_sent') === 'true';
+                if (!ahaAlreadySent) {
+                    try {
+                        let ahaMail = localStorage.getItem('user_email') || '';
+                        let ahaUserId = '00000000-0000-0000-0000-000000000000';
+                        let ahaName = localStorage.getItem('pref_first_name') || 'there';
+                        if (supabase) {
+                            const { data: { user: ahaUser } } = await supabase.auth.getUser();
+                            if (ahaUser) {
+                                ahaMail = ahaUser.email;
+                                ahaUserId = ahaUser.id;
+                            }
+                        }
+                        if (ahaMail && ahaMail !== 'guest@fundedjobs.ai') {
+                            console.log('[AHA] Sending first-time welcome email to', ahaMail);
+                            const ahaRes = await fetch('/api/send-test-email', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email: ahaMail, user_id: ahaUserId, first_name: ahaName })
+                            });
+                            const ahaData = await ahaRes.json();
+                            if (ahaData.success) {
+                                localStorage.setItem('aha_welcome_sent', 'true');
+                                console.log('[AHA] Welcome email sent successfully.');
+                            } else {
+                                console.warn('[AHA] Welcome email send failed:', ahaData);
+                            }
+                        }
+                    } catch (ahaErr) {
+                        console.warn('[AHA] Welcome email error (non-blocking):', ahaErr);
+                    }
+                }
                 updateActivePage('onboarding-success');
             }
         });
